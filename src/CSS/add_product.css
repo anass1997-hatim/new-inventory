@@ -1,0 +1,147 @@
+.offcanvas-folder {
+    width: 40% !important;
+    max-width: 100%;
+    padding: 1.5rem;
+    background-color: #fff;
+    box-shadow: rgba(0, 0, 0, 0.1) 0 1px 4px;
+    border-radius: 0.375rem;
+}
+
+.offcanvas-folder .offcanvas-header {
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+}
+
+.offcanvas-folder .offcanvas-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.offcanvas-folder form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.offcanvas-folder form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.offcanvas-folder form .form-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.offcanvas-folder form .form-control {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 0.375rem;
+    box-shadow: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.offcanvas-folder form .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.1rem rgba(16, 84, 148, 0.25);
+}
+
+/* File Input Wrapper */
+.file-input-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+}
+
+.file-input-icon {
+    width: 40px;
+    height: 40px;
+    background-color: var(--primary-color);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.file-input-icon:hover {
+    background-color: var(--primary-color);
+}
+
+.offcanvas-folder .btn-primary {
+    background-color: var(--primary-color);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.5rem 1.25rem;
+    border: none;
+    border-radius: 0.375rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.offcanvas-folder .btn-primary:hover {
+    background-color: var(--primary-color);
+}
+
+.offcanvas-folder .btn-outline-primary {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    border-radius: 0.375rem;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.offcanvas-folder .btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+
+.custom-fields h5 {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+
+.custom-fields .btn-outline-danger {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    transition: transform 0.2s ease;
+}
+
+.row.g-3 {
+    row-gap: 0.2rem;
+}
+
+@media (max-width: 768px) {
+    .offcanvas-folder {
+        width: 100% !important;
+    }
+
+    .offcanvas-folder form .form-control {
+        font-size: 0.7rem;
+        padding: 0.4rem 0.6rem;
+    }
+
+    .file-input-icon {
+        width: 35px;
+        height: 35px;
+    }
+}
+.offcanvas-folder form .form-control:focus,
+.offcanvas-folder form .form-select:focus  {
+    box-shadow: none;
+    outline: none;
+}

@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
-import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import logo from '../images/logo.jpg';
 import {
     FaBell,
     FaBarcode,
-    FaSearch,
     FaUserAlt,
     FaBox,
     FaCalculator,
@@ -22,16 +20,18 @@ import {
     FaTimes
 } from 'react-icons/fa';
 import '../CSS/layout.css';
+import {Link, Route, Routes} from "react-router-dom";
+import Products from "./body/products";
 
 const sidebarItems = [
-    { icon: FaHome, label: 'Accueil' },
+    { icon: FaHome, label: 'Accueil' , path: '/'},
     { icon: FaBox, label: 'Inventaire' },
     { icon: FaCalculator, label: 'Réappro Calcul' },
     { icon: FaBarcode, label: 'Sessions de Scan' },
     { icon: FaClipboardList, label: 'Commandes' },
     { icon: FaPrint, label: 'Impression' },
     { icon: FaPrint, label: 'Impression V2' },
-    { icon: FaBox, label: 'Produits' },
+    { icon: FaBox, label: 'Produits' , path: '/Products' },
     { icon: FaMobileAlt, label: 'Actifs Mobiles' },
     { icon: FaMapMarkedAlt, label: 'Emplacements' },
     { icon: FaSignOutAlt, label: 'Déconnexion' },
@@ -66,19 +66,6 @@ export default function Layout() {
                             id="navbar-content"
                             className={`navbar-collapse ${isMenuOpen ? 'show' : ''}`}
                         >
-                            <Form className="search-form d-flex justify-content-center w-100 my-2 my-lg-0">
-                                <div className="search-wrapper">
-                                    <Form.Control
-                                        type="search"
-                                        placeholder="Rechercher"
-                                        className="me-2"
-                                        aria-label="Search"
-                                    />
-                                    <Button className="navbar-search">
-                                        <FaSearch />
-                                    </Button>
-                                </div>
-                            </Form>
                             <div className="d-flex justify-content-between align-items-center button-group">
                                 {[FaBarcode, FaBell, FaUserAlt].map((Icon, index) => (
                                     <Button
@@ -102,33 +89,28 @@ export default function Layout() {
                     className={`sidebar ${isMenuOpen ? 'mobile-open' : ''}`}
                 >
                     <ul className="sidebar-menu">
-                        {sidebarItems.map(({ icon: Icon, label }, index) => (
-                            <li
-                                key={index}
-                                className="menu-item"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setIsMenuOpen(false);
-                                }}
-                            >
-                                <Icon className="menu-icon" />
-                                <span className="menu-label">{label}</span>
+                        {sidebarItems.map(({icon: Icon, label, path}, index) => (
+                            <li key={index} className="menu-item" onClick={() => setIsMenuOpen(false)}>
+                                {path ? (
+                                    <Link to={path} className="d-flex align-items-center">
+                                        <Icon className="menu-icon"/>
+                                        <span className="menu-label">{label}</span>
+                                    </Link>
+                                ) : (
+                                    <div className="d-flex align-items-center">
+                                        <Icon className="menu-icon"/>
+                                        <span className="menu-label">{label}</span>
+                                    </div>
+                                )}
                             </li>
                         ))}
                     </ul>
                 </div>
                 <div className={`content-area ${isMenuOpen ? 'sidebar-open' : ''}`}>
                     <div className="content-placeholder">
-                        <div className="instructions">
-                            <h2>Bienvenue sur RFID Inventaire</h2>
-                            <p>Optimisez la gestion de votre inventaire grâce à la technologie RFID. Voici quelques conseils : </p>
-                            <ul>
-                                <li>Utilisez le menu latéral pour accéder aux modules : Inventaire, Scan, et Rapports.</li>
-                                <li>Cliquez sur "Scan" pour démarrer une session RFID.</li>
-                                <li>Recherchez vos articles via la barre en haut.</li>
-                            </ul>
-                            <p>Besoin d'aide ? Consultez le manuel ou contactez le support.</p>
-                        </div>
+                        <Routes>
+                            <Route path="/Products" element={<Products/>}/>
+                        </Routes>
                     </div>
                 </div>
             </div>
