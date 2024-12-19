@@ -64,3 +64,44 @@ tbody td img {
         height: 20px;
     }
 }
+
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    font-size: 0.8rem;
+}
+
+.pagination-btn {
+    padding: 4px 50px;
+    background-color: #105494;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+
+
+.pagination-btn:disabled {
+    background-color: #e0e0e0;
+    color: #a0a0a0;
+    cursor: not-allowed;
+}
+
+.edit-button-folder {
+    font-size: 1rem;
+    background-color: #fff;
+    border: none;
+    color: #105494;
+}
+.delete-button-folder {
+    font-size: 1rem;
+    background-color: #fff;
+    border: none;
+    color: red;
+}

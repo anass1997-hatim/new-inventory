@@ -21,7 +21,8 @@ import {
 } from 'react-icons/fa';
 import '../CSS/layout.css';
 import {Link, Route, Routes} from "react-router-dom";
-import Products from "./body/products";
+import Products from "./body/folders";
+import UsePrinter from "./body/printer";
 
 const sidebarItems = [
     { icon: FaHome, label: 'Accueil' , path: '/'},
@@ -29,7 +30,7 @@ const sidebarItems = [
     { icon: FaCalculator, label: 'Réappro Calcul' },
     { icon: FaBarcode, label: 'Sessions de Scan' },
     { icon: FaClipboardList, label: 'Commandes' },
-    { icon: FaPrint, label: 'Impression' },
+    { icon: FaPrint, label: 'Impression' , path: '/Printer'},
     { icon: FaPrint, label: 'Impression V2' },
     { icon: FaBox, label: 'Produits' , path: '/Products' },
     { icon: FaMobileAlt, label: 'Actifs Mobiles' },
@@ -110,6 +111,9 @@ export default function Layout() {
                     <div className="content-placeholder">
                         <Routes>
                             <Route path="/Products" element={<Products/>}/>
+                        </Routes>
+                        <Routes>
+                            <Route path="/Printer" element={<UsePrinter/>}/>
                         </Routes>
                     </div>
                 </div>

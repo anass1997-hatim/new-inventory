@@ -1,0 +1,31 @@
+
+.printer-grid {
+    margin-top: 20px;
+    padding: 20px;
+}
+
+.grid-item {
+    padding: 10px;
+}
+
+.printer-card {
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 13px;
+    text-align: center;
+    transition: box-shadow 0.3s ease;
+}
+
+
+.printer-card h5 {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #343a40;
+}
+
+.printer-card p {
+    font-size: 10px;
+    color: #6c757d;
+}
