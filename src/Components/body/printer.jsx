@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { FaPlus, FaSearch } from "react-icons/fa";
 import Container from "react-bootstrap/Container";
 import "../../CSS/printer.css";
+import JsBarcode from "jsbarcode";
+import { QRCodeCanvas } from "qrcode.react";
 import CreateQr from "../form/create_qr";
 
-export default function UsePrinter() {
+    export default function UsePrinter() {
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedPrinter, setSelectedPrinter] = useState(null);
     const itemsPerPage = 6;
+
     const printerData = [
         {
             id: 1,
@@ -16,7 +19,8 @@ export default function UsePrinter() {
             dimensions: "2.37 x 1.37",
             resolution: "300 dpi",
             time: "11/13/24 2:52 PM",
-            qrCode: "https://via.placeholder.com/50",
+            type: "CODE128",
+            value: generateEAN13Checksum("123456789012"),
         },
         {
             id: 2,
@@ -24,7 +28,8 @@ export default function UsePrinter() {
             dimensions: "2.50 x 1.50",
             resolution: "300 dpi",
             time: "11/14/24 3:00 PM",
-            qrCode: "https://via.placeholder.com/50",
+            type: "CODE39",
+            value: "CODE39EXAMPLE",
         },
         {
             id: 3,
@@ -32,33 +37,38 @@ export default function UsePrinter() {
             dimensions: "3.00 x 2.00",
             resolution: "400 dpi",
             time: "11/15/24 4:15 PM",
-            qrCode: "https://via.placeholder.com/50",
+            type: "EAN13",
+            value: generateEAN13Checksum("123456789012"),
         },
         {
             id: 4,
             name: "Printer 4",
-            dimensions: "1.80 x 1.20",
-            resolution: "250 dpi",
-            time: "11/16/24 10:30 AM",
-            qrCode: "https://via.placeholder.com/50",
+            dimensions: "3.00 x 2.00",
+            resolution: "400 dpi",
+            time: "11/15/24 4:15 PM",
+            type: "QR",
+            value: "https://example.com",
         },
         {
             id: 5,
             name: "Printer 5",
-            dimensions: "2.80 x 1.80",
-            resolution: "350 dpi",
-            time: "11/17/24 11:45 AM",
-            qrCode: "https://via.placeholder.com/50",
+            dimensions: "3.00 x 2.00",
+            resolution: "400 dpi",
+            time: "11/15/24 4:15 PM",
+            type: "EMPTY",
+            value: "{Nom}",
         },
         {
             id: 6,
             name: "Printer 6",
-            dimensions: "3.20 x 2.50",
-            resolution: "450 dpi",
-            time: "11/18/24 9:00 AM",
-            qrCode: "https://via.placeholder.com/50",
+            dimensions: "2.80 x 1.80",
+            resolution: "350 dpi",
+            time: "11/16/24 2:15 PM",
+            type: "CODE128",
+            value: "567890123456",
         },
     ];
+
 
     const totalPages = Math.ceil(printerData.length / itemsPerPage);
 
@@ -67,11 +77,11 @@ export default function UsePrinter() {
     };
 
     const handlePrinterClick = (printer) => {
-        setSelectedPrinter(printer); // Set the clicked printer to navigate to CreateQr
+        setSelectedPrinter(printer);
     };
 
     const handleBackToGrid = () => {
-        setSelectedPrinter(null);
+        setSelectedPrinter(null)
     };
 
     const paginatedData = printerData.slice(
@@ -91,8 +101,8 @@ export default function UsePrinter() {
                         <Col>
                             <InputGroup className="search-input-group">
                                 <Form.Control
-                                    placeholder="Rechercher models Impressions"
-                                    aria-label="Search products"
+                                    placeholder="Rechercher modèles d'impressions"
+                                    aria-label="Search models"
                                     aria-describedby="button-addon2"
                                 />
                                 <Button variant="primary" id="button-addon2" title="Search">
@@ -104,17 +114,6 @@ export default function UsePrinter() {
                             <Button className="action-button">
                                 <FaPlus /> Ajouter
                             </Button>
-                            <Button className="action-button">
-                                <label htmlFor="file-upload" style={{ cursor: "pointer", margin: 0 }}>
-                                    Créer modèle
-                                </label>
-                                <input
-                                    type="file"
-                                    id="file-upload"
-                                    accept=".xlsx, .xls"
-                                    style={{ display: "none" }}
-                                />
-                            </Button>
                         </Col>
                     </Row>
                 </Container>
@@ -125,17 +124,15 @@ export default function UsePrinter() {
                     <Row>
                         {paginatedData.map((printer) => (
                             <Col key={printer.id} md={4} className="grid-item">
-                                <div
-                                    className="printer-card"
-                                    onClick={() => handlePrinterClick(printer)}
-                                    style={{ cursor: "pointer" }}
-                                >
+                                <div className="printer-card" onClick={() => handlePrinterClick(printer)}>
                                     <h5 className="printer-title">{printer.name}</h5>
-                                    <p className="printer-dimensions">{printer.dimensions}</p>
-                                    <p className="printer-resolution">{printer.resolution}</p>
+                                    <div className="printer-details">
+                                        <p>{printer.dimensions}</p>
+                                        <p>{printer.resolution}</p>
+                                    </div>
                                     <p className="printer-time">{printer.time}</p>
                                     <div className="printer-preview">
-                                        <img src={printer.qrCode} alt="QR Code" className="printer-qrcode" />
+                                        <BarcodeOrQr type={printer.type} value={printer.value}/>
                                     </div>
                                 </div>
                             </Col>
@@ -165,4 +162,38 @@ export default function UsePrinter() {
             </div>
         </>
     );
+}
+function BarcodeOrQr({ type, value }) {
+    const barcodeRef = useRef();
+
+    useEffect(() => {
+        if (type !== "QR" && type !== "EMPTY" && barcodeRef.current) {
+            try {
+                JsBarcode(barcodeRef.current, value, { format: type });
+            } catch (error) {
+                console.error(`Invalid input for ${type}:`, error.message);
+            }
+        }
+    }, [type, value]);
+
+    if (type === "QR") {
+        return <QRCodeCanvas value={value} size={100} />;
+    } else if (type === "EMPTY") {
+        return <div>{value}</div>;
+    } else {
+        return <svg ref={barcodeRef}></svg>;
+    }
+}
+function generateEAN13Checksum(code) {
+    if (code.length !== 12) {
+        throw new Error("EAN13 requires the first 12 digits to calculate the checksum.");
+    }
+    const sum = code
+        .split("")
+        .map(Number)
+        .reduce((acc, digit, idx) => {
+            return acc + digit * (idx % 2 === 0 ? 1 : 3);
+        }, 0);
+    const checksum = (10 - (sum % 10)) % 10;
+    return code + checksum;
 }

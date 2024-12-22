@@ -21,8 +21,9 @@ import {
 } from 'react-icons/fa';
 import '../CSS/layout.css';
 import {Link, Route, Routes} from "react-router-dom";
-import Products from "./body/folders";
 import UsePrinter from "./body/printer";
+import Folders from "./body/folders";
+//import Folders from "./body/folders";
 
 const sidebarItems = [
     { icon: FaHome, label: 'Accueil' , path: '/'},
@@ -110,9 +111,7 @@ export default function Layout() {
                 <div className={`content-area ${isMenuOpen ? 'sidebar-open' : ''}`}>
                     <div className="content-placeholder">
                         <Routes>
-                            <Route path="/Products" element={<Products/>}/>
-                        </Routes>
-                        <Routes>
+                            <Route path="/Products" element={<Folders/>}/>
                             <Route path="/Printer" element={<UsePrinter/>}/>
                         </Routes>
                     </div>
