@@ -1,20 +1,19 @@
 import { useState } from "react";
 import { Table } from "flowbite-react";
 import "../../CSS/folders_data.css";
-import DisplayCategoriesData from "./categories_data";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import {FaEdit, FaTrash} from "react-icons/fa";
 
-export default function DisplayFoldersData({ data = [] }) {
-    const [selectedFolder, setSelectedFolder] = useState(null);
+export default function DisplayPrintsData({ data = [] }) {
+    const [selectedPrint, setSelectedPrint] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const rowsPerPage = 7;
 
-    const handleRowClick = (folder) => {
-        setSelectedFolder(folder);
+    const handleRowClick = (print) => {
+        setSelectedPrint(print);
     };
 
     const handleBack = () => {
-        setSelectedFolder(null);
+        setSelectedPrint(null);
     };
 
     const totalPages = Math.max(1, Math.ceil(data.length / rowsPerPage));
@@ -29,61 +28,48 @@ export default function DisplayFoldersData({ data = [] }) {
         currentPage * rowsPerPage
     );
 
-    if (selectedFolder) {
-        return <DisplayCategoriesData folder={selectedFolder} onBack={handleBack} />;
+    if (selectedPrint) {
+        return (
+            <div className="selected-print-container">
+                {/* Customize further handling for selected print if needed */}
+                <button onClick={handleBack}>Retour</button>
+            </div>
+        );
     }
 
     return (
-        <div className="folders-data-container">
+        <div className="prints-data-container">
             <Table hoverable={true} striped={true}>
                 <thead>
                 <tr>
-                    <th>Image</th>
-                    <th>Identifiant</th>
-                    <th>Type</th>
-                    <th>Titre</th>
-                    <th>Catégorie</th>
-                    <th>Code-barres</th>
-                    <th>Emplacement</th>
-                    <th>Mots-clés</th>
-                    <th>Date de création</th>
-                    <th>Modifier</th>
-                    <th>Supprimer</th>
+                    <th>Title</th>
+                    <th>SKU</th>
+                    <th>Print Tags</th>
+                    <th>IPC*</th>
+                    <th>Items</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
                 </tr>
                 </thead>
                 <tbody>
                 {paginatedData.length === 0 ? (
                     <tr>
-                        <td colSpan="11" className="text-center">
-                            Aucune donnée disponible à afficher.
+                        <td colSpan="7" className="text-center">
+                            No data available to display.
                         </td>
                     </tr>
                 ) : (
                     paginatedData.map((row, rowIndex) => (
                         <tr key={rowIndex} onClick={() => handleRowClick(row)}>
-                            <td>
-                                {row.Image ? (
-                                    <img
-                                        src={row.Image}
-                                        alt="Folder"
-                                        className="folder-image"
-                                    />
-                                ) : (
-                                    <div className="placeholder-image">-</div>
-                                )}
-                            </td>
-                            <td>{row.Identifiant || "-"}</td>
-                            <td>{row.Type || "-"}</td>
-                            <td>{row.Titre || "-"}</td>
-                            <td>{row.Catégorie || "-"}</td>
-                            <td>{row["Code-barres"] || "-"}</td>
-                            <td>{row.Emplacement || "-"}</td>
-                            <td>{row["Mots-clés"] || "-"}</td>
-                            <td>{row["Date de création"] || "-"}</td>
+                            <td>{row.Title || "-"}</td>
+                            <td>{row.SKU || "-"}</td>
+                            <td>{row["Print Tags"] || "-"}</td>
+                            <td>{row["IPC*"] || "-"}</td>
+                            <td>{row.Items || "-"}</td>
                             <td>
                                 <button
                                     className="edit-button-folder"
-                                    aria-label="Modifier"
+                                    aria-label="Edit"
                                     onClick={(e) => e.stopPropagation()} // Prevent row click
                                 >
                                     <FaEdit />
@@ -92,7 +78,7 @@ export default function DisplayFoldersData({ data = [] }) {
                             <td>
                                 <button
                                     className="delete-button-folder"
-                                    aria-label="Supprimer"
+                                    aria-label="Delete"
                                     onClick={(e) => e.stopPropagation()} // Prevent row click
                                 >
                                     <FaTrash />
@@ -109,17 +95,17 @@ export default function DisplayFoldersData({ data = [] }) {
                     disabled={currentPage === 1}
                     className="pagination-btn"
                 >
-                    Précédent
+                    Previous
                 </button>
                 <span>
-                    Page {currentPage} sur {totalPages}
+                    Page {currentPage} of {totalPages}
                 </span>
                 <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
                     className="pagination-btn"
                 >
-                    Suivant
+                    Next
                 </button>
             </div>
         </div>

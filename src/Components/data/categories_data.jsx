@@ -20,14 +20,13 @@ export default function DisplayCategoriesData({ folder, onBack }) {
     const [currentPage, setCurrentPage] = useState(1);
     const rowsPerPage = 5;
 
-    const totalPages = categoriesData.length === 0 ? 1 : Math.ceil(categoriesData.length / rowsPerPage);
+    const totalPages = Math.max(1, Math.ceil(categoriesData.length / rowsPerPage));
 
     const handlePageChange = (page) => {
         if (page >= 1 && page <= totalPages) {
             setCurrentPage(page);
         }
     };
-
 
     const paginatedData = categoriesData.slice(
         (currentPage - 1) * rowsPerPage,
@@ -42,7 +41,7 @@ export default function DisplayCategoriesData({ folder, onBack }) {
                     Retour
                 </button>
             </div>
-            <Table striped responsive hover className="categories-table">
+            <Table hoverable={true} striped={true} className="categories-table">
                 <thead>
                 <tr>
                     <th>Catégorie</th>
@@ -64,13 +63,19 @@ export default function DisplayCategoriesData({ folder, onBack }) {
                             <td>{category.category}</td>
                             <td>{category.description}</td>
                             <td>
-                                <button className="edit-button-folder">
-                                    <FaEdit/>
+                                <button
+                                    className="edit-button-folder"
+                                    aria-label="Modifier catégorie"
+                                >
+                                    <FaEdit />
                                 </button>
                             </td>
                             <td>
-                                <button className="delete-button-folder">
-                                    <FaTrash/>
+                                <button
+                                    className="delete-button-folder"
+                                    aria-label="Supprimer catégorie"
+                                >
+                                    <FaTrash />
                                 </button>
                             </td>
                         </tr>

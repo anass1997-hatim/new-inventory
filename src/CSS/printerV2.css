@@ -1,0 +1,179 @@
+.printer-v2 {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    width: 100%;
+    height: 100%;
+    background-color: #fff;
+    border: 1px solid #ddd;
+}
+
+.printer-v2-produits {
+    padding: 0 5px;
+}
+
+.printer-v2-produits-text {
+    font-size: 0.82rem;
+    font-weight: bold;
+    color: #105494;
+}
+
+.printer-v2-produits-input-sections {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.printer-v2-search-input {
+    flex: 1;
+    width: 100%;
+}
+
+.printer-v2-search-input-ref {
+    flex: 1;
+    width: 100%;
+}
+
+.printer-v2-search-input .form-control {
+    font-size: 0.75rem;
+    color: #333;
+    border-radius: 3px;
+    width: 360px;
+    max-width: 100%;
+}
+
+.printer-v2-search-input .form-control:focus {
+    outline: none;
+}
+
+.printer-v2-search-input-ref .form-control {
+    font-size: 0.75rem;
+    color: #333;
+    border-radius: 3px;
+    width: 250px;
+    max-width: 100%;
+}
+
+.printer-v2-search-input input::placeholder,
+.printer-v2-search-input-ref input::placeholder {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.printer-v2-search-input input:focus,
+.printer-v2-search-input-ref input:focus {
+    outline: none;
+    box-shadow: none;
+    border-color: #ddd;
+}
+
+.icon-prod-v2 {
+    background-color: #105494;
+    color: #fff;
+    font-size: 12px;
+    border: none;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    margin-left: 5px;
+}
+
+.printer-v2-search-input-dropdowns {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 10px;
+    padding: 0 5px;
+}
+
+.printer-v2-dropdown {
+    width: 180px;
+    font-size: 0.75rem;
+    background-color: white;
+    color: #105494;
+    border: 0.09rem solid #105494;
+    border-radius: 3px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 6px 12px;
+    height: 32px;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.printer-v2-dropdown:hover {
+    background-color: white;
+    color: #105494;
+    border: 0.09rem solid #105494;
+}
+
+.printer-v2-dropdown:focus,
+.printer-v2-dropdown:active {
+    background-color: white !important;
+    color: #105494 !important;
+    border: 0.09rem solid #105494 !important;
+}
+.printer-v2-data {
+    margin-left: 5px;
+    height: 20%;
+    font-size: 0.8rem;
+    color: #333;
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    border-radius: 3px;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    align-items: center;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: #333;
+}
+
+.checkbox-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #105494;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+}
+
+.action-button {
+    font-size: 0.75rem;
+    background-color: #105494;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 6px 12px;
+    cursor: pointer;
+    text-align: center;
+    flex: none;
+}
+
+.action-button:hover {
+    background-color: #083d73;
+}

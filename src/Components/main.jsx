@@ -20,10 +20,11 @@ import {
     FaTimes
 } from 'react-icons/fa';
 import '../CSS/layout.css';
-import {Link, Route, Routes} from "react-router-dom";
+import {Link, Navigate, Route, Routes, useLocation} from "react-router-dom";
 import UsePrinter from "./body/printer";
 import Folders from "./body/folders";
-//import Folders from "./body/folders";
+import CreateQr from "./form/create_qr";
+import UsePrinterV2 from "./body/printer_v2";
 
 const sidebarItems = [
     { icon: FaHome, label: 'Accueil' , path: '/'},
@@ -32,12 +33,21 @@ const sidebarItems = [
     { icon: FaBarcode, label: 'Sessions de Scan' },
     { icon: FaClipboardList, label: 'Commandes' },
     { icon: FaPrint, label: 'Impression' , path: '/Printer'},
-    { icon: FaPrint, label: 'Impression V2' },
+    { icon: FaPrint, label: 'Impression V2', path: '/PrinterV2' },
     { icon: FaBox, label: 'Produits' , path: '/Products' },
     { icon: FaMobileAlt, label: 'Actifs Mobiles' },
     { icon: FaMapMarkedAlt, label: 'Emplacements' },
     { icon: FaSignOutAlt, label: 'Déconnexion' },
 ];
+const CreateQrWrapper = () => {
+    const location = useLocation();
+    const printer = location.state?.printer;
+    if (!printer) {
+        console.error("Printer data is missing");
+        return <Navigate to="/Printer" replace />;
+    }
+    return <CreateQr printer={printer} />;
+};
 
 export default function Layout() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -108,11 +118,14 @@ export default function Layout() {
                         ))}
                     </ul>
                 </div>
+
                 <div className={`content-area ${isMenuOpen ? 'sidebar-open' : ''}`}>
                     <div className="content-placeholder">
                         <Routes>
                             <Route path="/Products" element={<Folders/>}/>
                             <Route path="/Printer" element={<UsePrinter/>}/>
+                            <Route path="/Printer/QrMaker" element={<CreateQrWrapper />} />
+                            <Route path="/PrinterV2" element={<UsePrinterV2/>} />
                         </Routes>
                     </div>
                 </div>

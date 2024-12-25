@@ -6,68 +6,72 @@ import "../../CSS/printer.css";
 import JsBarcode from "jsbarcode";
 import { QRCodeCanvas } from "qrcode.react";
 import CreateQr from "../form/create_qr";
+import { useNavigate } from "react-router-dom";
 
     export default function UsePrinter() {
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedPrinter, setSelectedPrinter] = useState(null);
     const itemsPerPage = 6;
+    const navigate = useNavigate();
 
-    const printerData = [
-        {
-            id: 1,
-            name: "Printer 1",
-            dimensions: "2.37 x 1.37",
-            resolution: "300 dpi",
-            time: "11/13/24 2:52 PM",
-            type: "CODE128",
-            value: generateEAN13Checksum("123456789012"),
-        },
-        {
-            id: 2,
-            name: "Printer 2",
-            dimensions: "2.50 x 1.50",
-            resolution: "300 dpi",
-            time: "11/14/24 3:00 PM",
-            type: "CODE39",
-            value: "CODE39EXAMPLE",
-        },
-        {
-            id: 3,
-            name: "Printer 3",
-            dimensions: "3.00 x 2.00",
-            resolution: "400 dpi",
-            time: "11/15/24 4:15 PM",
-            type: "EAN13",
-            value: generateEAN13Checksum("123456789012"),
-        },
-        {
-            id: 4,
-            name: "Printer 4",
-            dimensions: "3.00 x 2.00",
-            resolution: "400 dpi",
-            time: "11/15/24 4:15 PM",
-            type: "QR",
-            value: "https://example.com",
-        },
-        {
-            id: 5,
-            name: "Printer 5",
-            dimensions: "3.00 x 2.00",
-            resolution: "400 dpi",
-            time: "11/15/24 4:15 PM",
-            type: "EMPTY",
-            value: "{Nom}",
-        },
-        {
-            id: 6,
-            name: "Printer 6",
-            dimensions: "2.80 x 1.80",
-            resolution: "350 dpi",
-            time: "11/16/24 2:15 PM",
-            type: "CODE128",
-            value: "567890123456",
-        },
-    ];
+        const printerData = [
+            {
+                id: 1,
+                name: "Printer 1",
+                dimensions: "2.37 x 1.37",
+                resolution: "300 dpi",
+                time: "11/13/24 2:52 PM",
+                type: "CODE128",
+                value: generateEAN13Checksum("123456789012"),
+            },
+            {
+                id: 2,
+                name: "Printer 2",
+                dimensions: "2.50 x 1.50",
+                resolution: "300 dpi",
+                time: "11/14/24 3:00 PM",
+                type: "CODE39",
+                format: "CODE39",
+                value: "CODE39EXAMPLE",
+            },
+            {
+                id: 3,
+                name: "Printer 3",
+                dimensions: "3.00 x 2.00",
+                resolution: "400 dpi",
+                time: "11/15/24 4:15 PM",
+                type: "EAN13",
+                format: "EAN13",
+                value: generateEAN13Checksum("123456789012"),
+            },
+            {
+                id: 4,
+                name: "Printer 4",
+                dimensions: "3.00 x 2.00",
+                resolution: "400 dpi",
+                time: "11/15/24 4:15 PM",
+                type: "QR",
+                value: "https://example.com",
+            },
+            {
+                id: 5,
+                name: "Printer 5",
+                dimensions: "3.00 x 2.00",
+                resolution: "400 dpi",
+                time: "11/15/24 4:15 PM",
+                type: "EMPTY",
+                value: "{Nom}",
+            },
+            {
+                id: 6,
+                name: "Printer 6",
+                dimensions: "2.80 x 1.80",
+                resolution: "350 dpi",
+                time: "11/16/24 2:15 PM",
+                type: "CODE128",
+                value: "567890123456",
+            },
+        ];
 
 
     const totalPages = Math.ceil(printerData.length / itemsPerPage);
@@ -76,8 +80,9 @@ import CreateQr from "../form/create_qr";
         setCurrentPage(page);
     };
 
-    const handlePrinterClick = (printer) => {
+    const handlePrinterClick =  (printer = null) => {
         setSelectedPrinter(printer);
+        navigate("/Printer/QrMaker", { state: { printer } });
     };
 
     const handleBackToGrid = () => {
@@ -90,7 +95,9 @@ import CreateQr from "../form/create_qr";
     );
 
     if (selectedPrinter) {
-        return <CreateQr printer={selectedPrinter} onBack={handleBackToGrid} />;
+        return <CreateQr printer={selectedPrinter}
+                         format={selectedPrinter.type}
+                         onBack={handleBackToGrid} />;
     }
 
     return (
@@ -111,7 +118,9 @@ import CreateQr from "../form/create_qr";
                             </InputGroup>
                         </Col>
                         <Col className="d-flex justify-content-end gap-2">
-                            <Button className="action-button">
+                            <Button className="action-button"
+                                    onClick={() => handlePrinterClick({ type: "EMPTY", value: "" })}
+                            >
                                 <FaPlus /> Ajouter
                             </Button>
                         </Col>
