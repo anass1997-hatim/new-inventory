@@ -31,7 +31,6 @@ export default function DisplayPrintsData({ data = [] }) {
     if (selectedPrint) {
         return (
             <div className="selected-print-container">
-                {/* Customize further handling for selected print if needed */}
                 <button onClick={handleBack}>Retour</button>
             </div>
         );
@@ -42,11 +41,11 @@ export default function DisplayPrintsData({ data = [] }) {
             <Table hoverable={true} striped={true}>
                 <thead>
                 <tr>
-                    <th>Title</th>
+                    <th>Titre</th>
                     <th>SKU</th>
-                    <th>Print Tags</th>
+                    <th>les étiquettes</th>
                     <th>IPC*</th>
-                    <th>Items</th>
+                    <th>Articles</th>
                     <th>Edit</th>
                     <th>Delete</th>
                 </tr>

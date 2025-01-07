@@ -1,107 +1,150 @@
+:root {
+    --primary-color: #105494;
+    --secondary-color: #fff;
+    --error-color: red;
+    --text-color: #333;
+    --text-muted-color: #a0a0a0;
+    --border-color: #ddd;
+    --hover-bg-color: #f9f9f9;
+    --font-size-small: 0.65rem;
+    --font-size-medium: 0.7rem;
+    --padding-small: 0.5rem;
+    --padding-medium: 0.75rem;
+    --padding-large: 1rem;
+    --border-radius: 0.375rem;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
 .table-container {
     margin: 1rem 0;
-    padding: 1rem;
-    background-color: #fff;
-    box-shadow: rgba(0, 0, 0, 0.1) 0 1px 4px;
-    border-radius: 0.375rem;
+    padding: var(--padding-large);
+    background-color: var(--secondary-color);
+    box-shadow: var(--shadow-color) 0 1px 4px;
+    border-radius: var(--border-radius);
     box-sizing: border-box;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.75rem;
+    font-size: var(--font-size-small);
     text-align: left;
     color: var(--primary-color);
 }
 
 thead tr {
     background-color: #f2f2f2;
-    color: var(--primary-color);
     font-weight: 700;
-    border-bottom: 2px solid #ddd;
+    border-bottom: 2px solid var(--border-color);
 }
 
 thead th {
-    padding: 0.75rem 0.8rem;
-    font-size: 0.72rem;
-    font-weight: bold;
+    padding: var(--padding-medium);
     letter-spacing: 0.05rem;
+    font-size: 0.65rem;
 }
 
 tbody tr {
     transition: background-color 0.2s ease;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--border-color);
 }
 
 tbody tr:hover {
-    background-color: white;
+    background-color: var(--hover-bg-color);
 }
 
 tbody td {
-    padding: 0.75rem 1rem;
-    color: #333;
+    padding: var(--padding-medium);
+    color: var(--text-color);
 }
 
 tbody td img {
     width: 20px;
     height: 20px;
     cursor: pointer;
-}
-.category-select-folder{
-    font-size: 0.75rem;
+    transition: transform 0.2s ease;
 }
 
-@media (max-width: 768px) {
-    table {
-        font-size: 0.75rem;
-    }
-    thead th, tbody td {
-        padding: 0.5rem;
-    }
-    tbody td img {
-        width: 20px;
-        height: 20px;
-    }
+tbody td img:hover {
+    transform: scale(1.1);
 }
 
+.category-select-folder {
+    font-size: var(--font-size-small);
+}
 
 .pagination-container {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 10px;
-    margin-top: 20px;
-    font-size: 0.8rem;
+    margin-top: var(--padding-large);
+    font-size: var(--font-size-medium);
 }
 
 .pagination-btn {
-    padding: 4px 50px;
-    background-color: #105494;
-    color: #fff;
+    padding: var(--padding-small) var(--padding-large);
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
     border: none;
-    border-radius: 5px;
+    border-radius: var(--border-radius);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-
+.pagination-btn:hover:not(:disabled) {
+    background-color: #083d73;
+    transform: scale(1.05);
+}
 
 .pagination-btn:disabled {
     background-color: #e0e0e0;
-    color: #a0a0a0;
+    color: var(--text-muted-color);
     cursor: not-allowed;
 }
 
-.edit-button-folder {
-    font-size: 1rem;
-    background-color: #fff;
-    border: none;
-    color: #105494;
-}
+.edit-button-folder,
 .delete-button-folder {
     font-size: 1rem;
-    background-color: #fff;
+    background-color: var(--secondary-color);
     border: none;
-    color: red;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.edit-button-folder {
+    color: var(--primary-color);
+}
+
+.edit-button-folder:hover {
+    color: #083d73;
+}
+
+.delete-button-folder {
+    color: var(--error-color);
+}
+
+.delete-button-folder:hover {
+    color: darkred;
+}
+
+@media (max-width: 768px) {
+    table {
+        font-size: var(--font-size-small);
+    }
+
+    thead th,
+    tbody td {
+        padding: var(--padding-small);
+    }
+
+    tbody td img {
+        width: 18px;
+        height: 18px;
+    }
+
+    .pagination-btn {
+        padding: var(--padding-small) var(--padding-medium);
+        font-size: var(--font-size-small);
+    }
 }

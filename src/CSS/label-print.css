@@ -209,3 +209,42 @@
     font-size: 0.75rem;
     background-color: #105494;
 }
+.button-group-print{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 5px;
+}
+
+.button-group-print .action-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.65rem;
+    background-color: #105494;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-align: center;
+}
+
+@media print {
+    .print-container {
+        background-color: white !important;
+    }
+
+    .print-content {
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Hide non-printable elements */
+    .qr-tools,
+    .button-group-print {
+        display: none !important;
+    }
+}

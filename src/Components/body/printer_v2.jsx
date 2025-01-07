@@ -1,6 +1,6 @@
 import "../../CSS/printerV2.css";
-import { InputGroup, Form, Button, Modal, Table, Dropdown } from "react-bootstrap"; // Use Dropdown from react-bootstrap
-import { FaSearch } from "react-icons/fa";
+import { InputGroup, Form, Button, Modal, Table, Dropdown } from "react-bootstrap";
+import {FaDownload, FaFileExcel, FaSearch} from "react-icons/fa";
 import DisplayPrintsData from "../data/prints_data";
 import { useReducer } from "react";
 import * as XLSX from "xlsx";
@@ -129,39 +129,13 @@ export default function UsePrinterV2() {
                         </InputGroup>
                         <div className="printer-v2-search-input-dropdowns">
                             <InputGroup className="printer-v2-search-input-ref">
+                                <InputGroup.Text className="icon-prod-v2">Ref</InputGroup.Text>
                                 <Form.Control
                                     type="text"
                                     placeholder="Enter reference"
                                     className="form-control"
                                     aria-label="Reference"
                                 />
-                                <InputGroup.Text className="icon-prod-v2">Ref</InputGroup.Text>
-                            </InputGroup>
-                        </div>
-                        <div className="printer-v2-search-input-dropdowns">
-                            <InputGroup className="printer-v2-search-input">
-                                <Dropdown>
-                                    <Dropdown.Toggle className="printer-v2-dropdown">Dropdown Button</Dropdown.Toggle>
-                                    <Dropdown.Menu>
-                                        <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
-                                        <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
-                                        <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
-                                    </Dropdown.Menu>
-                                </Dropdown>
-                                <InputGroup.Text className="icon-prod-v2">Printer</InputGroup.Text>
-                            </InputGroup>
-                        </div>
-                        <div className="printer-v2-search-input-dropdowns">
-                            <InputGroup className="printer-v2-search-input">
-                                <Dropdown>
-                                    <Dropdown.Toggle className="printer-v2-dropdown">Dropdown Button</Dropdown.Toggle>
-                                    <Dropdown.Menu>
-                                        <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
-                                        <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
-                                        <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
-                                    </Dropdown.Menu>
-                                </Dropdown>
-                                <InputGroup.Text className="icon-prod-v2">Label</InputGroup.Text>
                             </InputGroup>
                         </div>
                     </div>
@@ -179,22 +153,48 @@ export default function UsePrinterV2() {
                     </label>
                 </div>
                 <div className="action-buttons">
-                    <label htmlFor="file-upload" className="action-button" style={{ cursor: "pointer" }}>
-                        Importer depuis Excel
+                    <label htmlFor="file-upload" className="action-button" style={{cursor: "pointer"}}>
+                        <FaFileExcel/> Importer depuis Excel
                         <input
                             type="file"
                             id="file-upload"
                             accept=".xlsx, .xls"
-                            style={{ display: "none" }}
+                            style={{display: "none"}}
                             onChange={handleFileUpload}
                         />
                     </label>
                     <button className="action-button" onClick={handleDownloadExample}>
-                        Télécharger un modèle
+                        <FaDownload/>Télécharger un modèle
                     </button>
+                    <div className="printer-v2-search-input-dropdowns">
+                        <InputGroup className="printer-v2-search-input">
+                            <InputGroup.Text className="icon-prod-v2">Printer</InputGroup.Text>
+                            <Dropdown>
+                                <Dropdown.Toggle className="printer-v2-dropdown">Dropdown Button</Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                    <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
+                                    <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
+                                    <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        </InputGroup>
+                    </div>
+                    <div className="printer-v2-search-input-dropdowns">
+                        <InputGroup className="printer-v2-search-input">
+                            <InputGroup.Text className="icon-prod-v2">Label</InputGroup.Text>
+                            <Dropdown>
+                                <Dropdown.Toggle className="printer-v2-dropdown">Dropdown Button</Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                    <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
+                                    <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
+                                    <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        </InputGroup>
+                    </div>
                 </div>
             </div>
-            <DisplayPrintsData data={state.confirmedData} />
+            <DisplayPrintsData data={state.confirmedData}/>
             <Modal show={state.showModal} onHide={handleCancelImport} className="confirmation-modal">
                 <Modal.Header closeButton>
                     <Modal.Title>Validation des Données</Modal.Title>

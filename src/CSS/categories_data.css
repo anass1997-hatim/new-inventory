@@ -1,3 +1,13 @@
+:root {
+    --primary-color: #0056b3;
+    --secondary-color: #fff;
+    --text-color: #333;
+    --font-size-title: 1.5rem;
+    --font-size-button: 0.75rem;
+    --padding-button: 4px 35px;
+    --border-radius: 4px;
+    --transition-speed: 0.3s;
+}
 
 .header {
     display: flex;
@@ -7,19 +17,22 @@
 }
 
 .title {
-    font-size: 1.5rem;
+    font-size: var(--font-size-title);
     font-weight: bold;
-    color: #333;
+    color: var(--text-color);
 }
 
 .back-button {
-    background-color: #0056b3;
-    color: white;
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
     border: none;
-    padding: 4px 35px;
-    border-radius: 4px;
-    font-size: 0.75rem;
+    padding: var(--padding-button);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-button);
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color var(--transition-speed), transform var(--transition-speed);
 }
 
+.back-button:hover {
+    background-color: #003d80; /* Slightly darker shade for hover */
+}

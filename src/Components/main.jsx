@@ -25,10 +25,12 @@ import UsePrinter from "./body/printer";
 import Folders from "./body/folders";
 import CreateQr from "./form/create_qr";
 import UsePrinterV2 from "./body/printer_v2";
+import Inventaire from "./inventaire/inventaire";
+import Index from "./body";
 
 const sidebarItems = [
     { icon: FaHome, label: 'Accueil' , path: '/'},
-    { icon: FaBox, label: 'Inventaire' },
+    { icon: FaBox, label: 'Inventaire', path: '/Inventaire' },
     { icon: FaCalculator, label: 'Réappro Calcul' },
     { icon: FaBarcode, label: 'Sessions de Scan' },
     { icon: FaClipboardList, label: 'Commandes' },
@@ -123,9 +125,11 @@ export default function Layout() {
                     <div className="content-placeholder">
                         <Routes>
                             <Route path="/Products" element={<Folders/>}/>
+                            <Route path="/" element={<Index/>}/>
                             <Route path="/Printer" element={<UsePrinter/>}/>
                             <Route path="/Printer/QrMaker" element={<CreateQrWrapper />} />
                             <Route path="/PrinterV2" element={<UsePrinterV2/>} />
+                            <Route path="/Inventaire" element={<Inventaire />} />
                         </Routes>
                     </div>
                 </div>

@@ -5,88 +5,180 @@ import Container from "react-bootstrap/Container";
 import "../../CSS/printer.css";
 import JsBarcode from "jsbarcode";
 import { QRCodeCanvas } from "qrcode.react";
-import CreateQr from "../form/create_qr";
 import { useNavigate } from "react-router-dom";
 
-    export default function UsePrinter() {
+export default function UsePrinter() {
     const [currentPage, setCurrentPage] = useState(1);
-    const [selectedPrinter, setSelectedPrinter] = useState(null);
     const itemsPerPage = 6;
     const navigate = useNavigate();
 
-        const printerData = [
-            {
-                id: 1,
-                name: "Printer 1",
-                dimensions: "2.37 x 1.37",
-                resolution: "300 dpi",
-                time: "11/13/24 2:52 PM",
-                type: "CODE128",
-                value: generateEAN13Checksum("123456789012"),
-            },
-            {
-                id: 2,
-                name: "Printer 2",
-                dimensions: "2.50 x 1.50",
-                resolution: "300 dpi",
-                time: "11/14/24 3:00 PM",
-                type: "CODE39",
-                format: "CODE39",
-                value: "CODE39EXAMPLE",
-            },
-            {
-                id: 3,
-                name: "Printer 3",
-                dimensions: "3.00 x 2.00",
-                resolution: "400 dpi",
-                time: "11/15/24 4:15 PM",
-                type: "EAN13",
-                format: "EAN13",
-                value: generateEAN13Checksum("123456789012"),
-            },
-            {
-                id: 4,
-                name: "Printer 4",
-                dimensions: "3.00 x 2.00",
-                resolution: "400 dpi",
-                time: "11/15/24 4:15 PM",
-                type: "QR",
-                value: "https://example.com",
-            },
-            {
-                id: 5,
-                name: "Printer 5",
-                dimensions: "3.00 x 2.00",
-                resolution: "400 dpi",
-                time: "11/15/24 4:15 PM",
-                type: "EMPTY",
-                value: "{Nom}",
-            },
-            {
-                id: 6,
-                name: "Printer 6",
-                dimensions: "2.80 x 1.80",
-                resolution: "350 dpi",
-                time: "11/16/24 2:15 PM",
-                type: "CODE128",
-                value: "567890123456",
-            },
-        ];
+    const printerData = [
+        {
+            id: 1,
+            name: "Printer 1",
+            dimensions: "2.37 x 1.37",
+            resolution: "300 dpi",
+            time: "11/13/24 2:52 PM",
+            type: "barcode",
+            format: "CODE128",
+            value: "ABC123456789"
+        },
+        {
+            id: 2,
+            name: "Printer 2",
+            dimensions: "2.50 x 1.50",
+            resolution: "300 dpi",
+            time: "11/14/24 3:00 PM",
+            type: "barcode",
+            format: "CODE39",
+            value: "CODE39TEST"
+        },
+        {
+            id: 3,
+            name: "Printer 3",
+            dimensions: "3.00 x 2.00",
+            resolution: "400 dpi",
+            time: "11/15/24 4:15 PM",
+            type: "barcode",
+            format: "EAN13",
+            value: "1234567890128"
+        },
+        {
+            id: 4,
+            name: "Printer 4",
+            dimensions: "3.00 x 2.00",
+            resolution: "400 dpi",
+            time: "11/15/24 4:15 PM",
+            type: "QR",
+            value: "https://example.com"
+        },
+        {
+            id: 5,
+            name: "Printer 5",
+            dimensions: "3.00 x 2.00",
+            resolution: "400 dpi",
+            time: "11/15/24 4:15 PM",
+            type: "EMPTY",
+            value: "{Nom}"
+        },
+        {
+            id: 6,
+            name: "Printer 6",
+            dimensions: "2.75 x 1.75",
+            resolution: "300 dpi",
+            time: "11/16/24 10:30 AM",
+            type: "barcode",
+            format: "MSI",
+            value: "123456789012"
+        }
+    ];
 
+    const handlePrinterClick = (printer = null) => {
+        const printerWithFormat = printer ? {
+            ...printer,
+            type: printer.type,
+            format: printer.format || "CODE128",
+            value: printer.value || "",
+            content: printer.type === "EMPTY" ? printer.value : "",
+            fontSize: 24,
+            width: 4,
+            height: 2,
+            x: 50,
+            y: 50,
+            attributes: []
+        } : {
+            type: "EMPTY",
+            value: "",
+            content: "",
+            fontSize: 24,
+            width: 4,
+            height: 2,
+            x: 50,
+            y: 50,
+            attributes: []
+        };
 
-    const totalPages = Math.ceil(printerData.length / itemsPerPage);
-
-    const handlePageChange = (page) => {
-        setCurrentPage(page);
+        navigate("/Printer/QrMaker", {
+            state: {
+                printer: printerWithFormat
+            }
+        });
     };
 
-    const handlePrinterClick =  (printer = null) => {
-        setSelectedPrinter(printer);
-        navigate("/Printer/QrMaker", { state: { printer } });
-    };
+    const BarcodeOrQr = ({ type, value, format }) => {
+        const barcodeRef = useRef();
 
-    const handleBackToGrid = () => {
-        setSelectedPrinter(null)
+        useEffect(() => {
+            if (type === "barcode" && barcodeRef.current) {
+                try {
+                    // Define format-specific options
+                    const barcodeOptions = {
+                        width: 2,
+                        height: 100,
+                        displayValue: true,
+                        fontSize: 16,
+                        marginTop: 10,
+                        marginBottom: 10,
+                        format: format
+                    };
+
+                    // Add format-specific validations and modifications
+                    if (format === "EAN13") {
+                        // Ensure value is exactly 12 or 13 digits (EAN13 requires 12 digits + optional check digit)
+                        const cleanValue = value.replace(/[^\d]/g, '').slice(0, 13);
+                        if (cleanValue.length < 12) {
+                            throw new Error("EAN13 requires at least 12 digits");
+                        }
+                        barcodeOptions.format = "EAN13";
+                        JsBarcode(barcodeRef.current, cleanValue, barcodeOptions);
+                    } else if (format === "CODE39") {
+                        barcodeOptions.format = "CODE39";
+                        JsBarcode(barcodeRef.current, value, barcodeOptions);
+                    } else if (format === "MSI") {
+                        const cleanValue = value.replace(/[^\d]/g, '');
+                        barcodeOptions.format = "MSI";
+                        JsBarcode(barcodeRef.current, cleanValue, barcodeOptions);
+                    } else {
+                        // Default to CODE128 for other formats
+                        barcodeOptions.format = "CODE128";
+                        JsBarcode(barcodeRef.current, value, barcodeOptions);
+                    }
+                } catch (error) {
+                    console.error("Barcode generation error:", error);
+                    // Clear the SVG content in case of error
+                    if (barcodeRef.current) {
+                        barcodeRef.current.innerHTML = '';
+                    }
+                }
+            }
+        }, [type, value, format]);
+
+        if (type === "QR") {
+            return (
+                <div style={{ width: '100px', height: '100px', margin: 'auto' }}>
+                    <QRCodeCanvas
+                        value={value || "Empty QR"}
+                        size={100}
+                        level="M"
+                        includeMargin={true}
+                    />
+                </div>
+            );
+        }
+        if (type === "EMPTY") {
+            return <h4 style={{ margin: '20px 0' }}>{value || "{Nom}"}</h4>;
+        }
+        return (
+            <svg
+                ref={barcodeRef}
+                style={{
+                    height: '100px',
+                    width: '100%',
+                    margin: 'auto',
+                    display: 'block'
+                }}
+            />
+        );
     };
 
     const paginatedData = printerData.slice(
@@ -94,11 +186,7 @@ import { useNavigate } from "react-router-dom";
         currentPage * itemsPerPage
     );
 
-    if (selectedPrinter) {
-        return <CreateQr printer={selectedPrinter}
-                         format={selectedPrinter.type}
-                         onBack={handleBackToGrid} />;
-    }
+    const totalPages = Math.ceil(printerData.length / itemsPerPage);
 
     return (
         <>
@@ -110,7 +198,6 @@ import { useNavigate } from "react-router-dom";
                                 <Form.Control
                                     placeholder="Rechercher modèles d'impressions"
                                     aria-label="Search models"
-                                    aria-describedby="button-addon2"
                                 />
                                 <Button variant="primary" id="button-addon2" title="Search">
                                     <FaSearch />
@@ -118,8 +205,9 @@ import { useNavigate } from "react-router-dom";
                             </InputGroup>
                         </Col>
                         <Col className="d-flex justify-content-end gap-2">
-                            <Button className="action-button"
-                                    onClick={() => handlePrinterClick({ type: "EMPTY", value: "" })}
+                            <Button
+                                className="action-button"
+                                onClick={() => handlePrinterClick()}
                             >
                                 <FaPlus /> Ajouter
                             </Button>
@@ -141,7 +229,7 @@ import { useNavigate } from "react-router-dom";
                                     </div>
                                     <p className="printer-time">{printer.time}</p>
                                     <div className="printer-preview">
-                                        <BarcodeOrQr type={printer.type} value={printer.value}/>
+                                        <BarcodeOrQr {...printer} />
                                     </div>
                                 </div>
                             </Col>
@@ -152,17 +240,15 @@ import { useNavigate } from "react-router-dom";
 
             <div className="pagination-container">
                 <button
-                    onClick={() => handlePageChange(currentPage - 1)}
+                    onClick={() => setCurrentPage(prev => prev - 1)}
                     disabled={currentPage === 1}
                     className="pagination-btn"
                 >
                     Précédent
                 </button>
-                <span>
-                    Page {currentPage} sur {totalPages}
-                </span>
+                <span>Page {currentPage} sur {totalPages}</span>
                 <button
-                    onClick={() => handlePageChange(currentPage + 1)}
+                    onClick={() => setCurrentPage(prev => prev + 1)}
                     disabled={currentPage === totalPages}
                     className="pagination-btn"
                 >
@@ -171,38 +257,4 @@ import { useNavigate } from "react-router-dom";
             </div>
         </>
     );
-}
-function BarcodeOrQr({ type, value }) {
-    const barcodeRef = useRef();
-
-    useEffect(() => {
-        if (type !== "QR" && type !== "EMPTY" && barcodeRef.current) {
-            try {
-                JsBarcode(barcodeRef.current, value, { format: type });
-            } catch (error) {
-                console.error(`Invalid input for ${type}:`, error.message);
-            }
-        }
-    }, [type, value]);
-
-    if (type === "QR") {
-        return <QRCodeCanvas value={value} size={100} />;
-    } else if (type === "EMPTY") {
-        return <div>{value}</div>;
-    } else {
-        return <svg ref={barcodeRef}></svg>;
-    }
-}
-function generateEAN13Checksum(code) {
-    if (code.length !== 12) {
-        throw new Error("EAN13 requires the first 12 digits to calculate the checksum.");
-    }
-    const sum = code
-        .split("")
-        .map(Number)
-        .reduce((acc, digit, idx) => {
-            return acc + digit * (idx % 2 === 0 ? 1 : 3);
-        }, 0);
-    const checksum = (10 - (sum % 10)) % 10;
-    return code + checksum;
 }

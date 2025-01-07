@@ -8,6 +8,7 @@ const Folders = lazy(() => import("./Components/body/folders"));
 const UsePrinter = lazy(() => import("./Components/body/printer"));
 const CreateQr = lazy(() => import("./Components/form/create_qr"));
 const UsePrinterV2 = lazy(() => import("./Components/body/printer_v2"));
+const Inventaire= lazy(() => import("./Components/inventaire/inventaire"));
 
 const CreateQrWrapper = () => {
     const location = useLocation();
@@ -36,6 +37,7 @@ const App = () => {
                         <Route path="Printer" element={<UsePrinter />} />
                         <Route path="Printer/QrMaker" element={<CreateQrWrapper />} />
                         <Route path="PrinterV2" element={<UsePrinterV2 />} />
+                        <Route path="Inventaire" element={<Inventaire />} />
                     </Route>
                 </Routes>
             </Suspense>
