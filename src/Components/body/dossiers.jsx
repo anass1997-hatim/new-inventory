@@ -3,38 +3,34 @@ import Container from "react-bootstrap/Container";
 import { Col, InputGroup, Nav, Row, Form, Button } from "react-bootstrap";
 import { FaSearch, FaPlus, FaFileImport, FaFileExport, FaFileExcel } from "react-icons/fa";
 import { useReducer, useRef } from "react";
-import DisplayProductData from '../data/data_produits';
+import DisplayDossiersData from '../data/data_dossiers';
 import * as XLSX from "xlsx";
-import ValidationModal from "../modals/produits_modal";
-import DataComponent from "../form/data_form";
+import ValidationModal from "../modals/dossiers_modal";
+import FolderForm from "../form/ajout_dossier";
 
 const necessaryFields = [
     "Identifiant",
     "Code-barres",
-    "Titre",
+    "Nom du dossie",
     "Catégorie",
-    "Quantité",
-    "Quantité Disponible",
-    "Prix",
-    "Date d'expiration",
+    "Emplacement",
+    "Description",
+    "Permission",
+    "Créé le"
 ];
 
 const optionalFields = [
-    "Marque",
-    "Modèle",
-    "Sous-catégories",
-    "Famille",
-    "Sous-famille",
-    "Taille",
-    "Couleur",
-    "Poids",
-    "Dimensions",
-    "Date de Création",
+    "Numéro de commande",
+    "Nom de la dernière intervention",
+    "Ville",
+    "Bâtiment",
+    "Étage",
+    "Salle"
 ];
 
 const initialState = {
     activeTab: 'Active',
-    showOffcanvas: false,
+    showFolderForm: false,
     uploadedData: [],
     parsedData: [],
     validationSummary: [],
@@ -46,8 +42,8 @@ const reducer = (state, action) => {
     switch (action.type) {
         case 'SET_ACTIVE_TAB':
             return { ...state, activeTab: action.payload };
-        case 'TOGGLE_OFFCANVAS':
-            return { ...state, showOffcanvas: action.payload };
+        case 'TOGGLE_FOLDER_FORM':
+            return { ...state, showFolderForm: action.payload };
         case 'SET_UPLOADED_DATA':
             return { ...state, uploadedData: action.payload };
         case 'SET_PARSED_DATA':
@@ -71,7 +67,7 @@ const reducer = (state, action) => {
     }
 };
 
-export default function Produits() {
+export default function Dossiers() {
     const [state, dispatch] = useReducer(reducer, initialState);
     const fileInputRef = useRef(null);
 
@@ -83,31 +79,10 @@ export default function Produits() {
         const errors = [];
         const headers = Object.keys(data[0]);
 
+        // Check for missing required fields
         const missingFields = necessaryFields.filter((field) => !headers.includes(field));
         if (missingFields.length > 0) {
             errors.push(`Les champs obligatoires suivants sont manquants : ${missingFields.join(", ")}`);
-        }
-
-        let missingFieldCounts = {};
-        const today = new Date().toISOString().split('T')[0];
-
-        data.forEach((row, index) => {
-            if (!row["Date de Création"] || row["Date de Création"].toString().trim() === "") {
-                row["Date de Création"] = today;
-            }
-
-            necessaryFields.forEach((field) => {
-                if (!row[field] || row[field].toString().trim() === "") {
-                    missingFieldCounts[field] = missingFieldCounts[field] || [];
-                    missingFieldCounts[field].push(index + 1);
-                }
-            });
-        });
-
-        if (Object.keys(missingFieldCounts).length > 0) {
-            Object.entries(missingFieldCounts).forEach(([field, rows]) => {
-                errors.push(`${field} manquant dans ${rows.length} ligne(s): ${rows.join(", ")}`);
-            });
         }
 
         dispatch({ type: 'SET_VALIDATION_SUMMARY', payload: errors });
@@ -154,7 +129,24 @@ export default function Produits() {
     };
 
     const handleConfirmImport = () => {
-        const newData = [...state.uploadedData, ...state.parsedData];
+        const normalizedData = state.parsedData.map((row) => ({
+            Identifiant: row["Identifiant"] || "-",
+            "Code-barres": row["Code-barres"] || "-",
+            "Nom du dossie": row["Nom du dossie"] || "-",
+            Catégorie: row["Catégorie"] || "-",
+            Emplacement: row["Emplacement"] || "-",
+            Description: row["Description"] || "-",
+            Permission: row["Permission"] || "-",
+            "Créé le": row["Créé le"] || "-",
+            "Numéro de commande": row["Numéro de commande"] || "-",
+            "Nom de la dernière intervention": row["Nom de la dernière intervention"] || "-",
+            "Ville": row["Ville"] || "-",
+            "Bâtiment": row["Bâtiment"] || "-",
+            "Étage": row["Étage"] || "-",
+            "Salle": row["Salle"] || "-"
+        }));
+
+        const newData = [...state.uploadedData, ...normalizedData];
         dispatch({ type: 'SET_UPLOADED_DATA', payload: newData });
         dispatch({ type: 'RESET_IMPORT_DATA' });
     };
@@ -172,8 +164,8 @@ export default function Produits() {
         try {
             const worksheet = XLSX.utils.json_to_sheet(state.uploadedData);
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Produits");
-            XLSX.writeFile(workbook, `produits_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Dossiers");
+            XLSX.writeFile(workbook, `dossiers_export_${new Date().toISOString().split('T')[0]}.xlsx`);
         } catch (error) {
             console.error("Erreur lors de l'exportation:", error);
             alert("Erreur lors de l'exportation du fichier");
@@ -181,39 +173,29 @@ export default function Produits() {
     };
 
     const handleDownloadExample = () => {
-        try {
-            const today = new Date().toISOString().split("T")[0];
-            const exampleData = [
-                {
-                    Identifiant: "12345",
-                    "Code-barres": "123456789",
-                    Titre: "Exemple Titre",
-                    Catégorie: "Exemple Catégorie",
-                    Quantité: "10",
-                    "Quantité Disponible": "8",
-                    Prix: "100",
-                    "Date de Création": today,
-                    "Date d'expiration": "2024-12-31",
-                    Marque: "Exemple Marque",
-                    Modèle: "Exemple Modèle",
-                    "Sous-catégories": "Exemple Sous-catégorie",
-                    Famille: "Exemple Famille",
-                    "Sous-famille": "Exemple Sous-famille",
-                    Taille: "M",
-                    Couleur: "Bleu",
-                    Poids: "1kg",
-                    Dimensions: "30x20x10",
-                }
-            ];
+        const exampleData = [
+            {
+                Identifiant: "DOS001",
+                "Code-barres": "123456789",
+                "Nom du dossie": "Exemple Dossier",
+                Catégorie: "Catégorie exemple",
+                Emplacement: "Emplacement exemple",
+                Description: "Description exemple",
+                Permission: "Lecture, Modification",
+                "Créé le": new Date().toISOString().split("T")[0],
+                "Numéro de commande": "CMD001",
+                "Nom de la dernière intervention": "Maintenance préventive",
+                "Ville": "Paris",
+                "Bâtiment": "Bâtiment A",
+                "Étage": "2ème étage",
+                "Salle": "Salle 204"
+            },
+        ];
 
-            const worksheet = XLSX.utils.json_to_sheet(exampleData);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Exemple");
-            XLSX.writeFile(workbook, "modele_produits.xlsx");
-        } catch (error) {
-            console.error("Erreur lors du téléchargement du modèle:", error);
-            alert("Erreur lors du téléchargement du modèle");
-        }
+        const worksheet = XLSX.utils.json_to_sheet(exampleData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Exemple");
+        XLSX.writeFile(workbook, "modele_dossiers.xlsx");
     };
 
     return (
@@ -223,14 +205,14 @@ export default function Produits() {
                     <Row className="align-items-center justify-content-between">
                         <Col>
                             <InputGroup className="search-input-group">
-                                <Form.Control placeholder="Rechercher produits" />
+                                <Form.Control placeholder="Rechercher dossiers" />
                                 <Button variant="primary"><FaSearch /></Button>
                             </InputGroup>
                         </Col>
                         <Col className="d-flex justify-content-end gap-2">
                             <Button
                                 className="action-button"
-                                onClick={() => dispatch({ type: 'TOGGLE_OFFCANVAS', payload: true })}
+                                onClick={() => dispatch({ type: 'TOGGLE_FOLDER_FORM', payload: true })}
                                 disabled={state.isProcessingFile}
                             >
                                 <FaPlus /> Ajouter
@@ -281,15 +263,16 @@ export default function Produits() {
                     <Nav.Item><Nav.Link eventKey="Déstockage">Déstockage</Nav.Link></Nav.Item>
                 </Nav>
                 <div className="tab-content mt-3">
-                    {state.activeTab === 'Active' && <DisplayProductData data={state.uploadedData} />}
+                    {state.activeTab === 'Active' && <DisplayDossiersData data={state.uploadedData} />}
                     {state.activeTab === 'Inactive' && <div>Inactive Content</div>}
                     {state.activeTab === 'Déstockage' && <div>Déstockage Content</div>}
                 </div>
             </div>
 
-            <DataComponent
-                show={state.showOffcanvas}
-                onHide={() => dispatch({ type: 'TOGGLE_OFFCANVAS', payload: false })}
+            <FolderForm
+                show={state.showFolderForm}
+                onHide={() => dispatch({ type: 'TOGGLE_FOLDER_FORM', payload: false })}
+                isFromProductForm={false}
             />
 
             <ValidationModal

@@ -45,7 +45,9 @@ export default function DataComponent({ show, onHide }) {
                 show={showFolderForm}
                 onHide={() => handleFolderFormShow(false)}
                 onSwitchToProductForm={switchToProductForm}
+                isFromProductForm={true}
             />
+
         </>
     );
 }

@@ -247,6 +247,45 @@ export default function ProductForm({ show, onHide ,  onSwitchToFolderForm    })
 
 
                         <Form.Group className="mb-3">
+                            <Form.Label>Catégorie *</Form.Label>
+                            <InputGroup>
+                                <Form.Select
+                                    value={state.category}
+                                    onChange={(e) => handleFieldChange("category", e.target.value)}
+                                    isInvalid={!!state.formErrors.category}
+                                >
+                                    <option value="">Sélectionner une catégorie</option>
+                                    {state.categories.map((category, index) => (
+                                        <option key={index} value={category}>
+                                            {category}
+                                        </option>
+                                    ))}
+                                </Form.Select>
+                                <Form.Control
+                                    placeholder="Nouvelle catégorie"
+                                    value={state.newCategory}
+                                    onChange={(e) =>
+                                        dispatch({
+                                            type: "SET_FIELD",
+                                            field: "newCategory",
+                                            value: e.target.value,
+                                        })
+                                    }
+                                />
+                                <Button variant="outline-primary" onClick={() => dispatch({ type: "ADD_CATEGORY" })}>
+                                    <FaPlus />
+                                </Button>
+                                <Form.Control.Feedback type="invalid">
+                                    {state.formErrors.category}
+                                </Form.Control.Feedback>
+                            </InputGroup>
+                        </Form.Group>
+
+
+
+
+
+                        <Form.Group className="mb-3">
                             <Form.Label>Emplacement *</Form.Label>
                             <InputGroup>
                                 <Form.Select

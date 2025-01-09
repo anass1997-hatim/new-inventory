@@ -1,9 +1,8 @@
 import { useReducer } from "react";
-import { Offcanvas, Form, Button, Row, Col } from "react-bootstrap";
+import { Offcanvas, Form, Button, Row, Col, InputGroup } from "react-bootstrap";
 import { FaPlus, FaTrash } from "react-icons/fa";
 
-const predefinedPermissions = ["Lecture", "Écriture", "Admin"];
-
+const predefinedPermissions = ["Lecture", "Suppression", "Modification"];
 const initialState = {
     identifiant: "",
     codebarres: "",
@@ -11,6 +10,10 @@ const initialState = {
     description: "",
     permissions: [],
     customFields: [],
+    categories: ["Catégorie 1", "Catégorie 2"],
+    emplacements: ["Emplacement 1", "Emplacement 2"],
+    newCategory: "",
+    newEmplacement: "",
     formErrors: {},
 };
 
@@ -25,6 +28,20 @@ const reducer = (state, action) => {
                     [action.field]: action.error || undefined,
                 },
             };
+        case "ADD_CATEGORY":
+            if (!state.newCategory.trim()) return state;
+            return {
+                ...state,
+                categories: [...state.categories, state.newCategory.trim()],
+                newCategory: "",
+            };
+        case "ADD_EMPLACEMENT":
+            if (!state.newEmplacement.trim()) return state;
+            return {
+                ...state,
+                emplacements: [...state.emplacements, state.newEmplacement.trim()],
+                newEmplacement: "",
+            };
         case "SET_FORM_ERRORS":
             return {
                 ...state,
@@ -33,7 +50,7 @@ const reducer = (state, action) => {
         case "ADD_CUSTOM_FIELD":
             return {
                 ...state,
-                customFields: [...state.customFields, { nom: "", type: "", correspondA: "" }],
+                customFields: [...state.customFields, { name: "", value: "" }],
             };
         case "DELETE_CUSTOM_FIELD":
             return {
@@ -51,15 +68,17 @@ const reducer = (state, action) => {
     }
 };
 
-export default function FolderForm({ show, onHide, onSwitchToProductForm }) {
+export default function FolderForm({ show, onHide, onSwitchToProductForm, isFromProductForm }) {
     const [state, dispatch] = useReducer(reducer, initialState);
 
     const validateForm = () => {
         const errors = {};
-        if (!state.identifiant) errors.identifiant = "L'identifiant est requis.";
-        if (!state.codebarres) errors.codebarres = "Le code-barres est requis.";
-        if (!state.nomDossier) errors.nomDossier = "Le nom du dossier est requis.";
+        if (!state.identifiant.trim()) errors.identifiant = "L'identifiant est requis.";
+        if (!state.codebarres.trim()) errors.codebarres = "Le code-barres est requis.";
+        if (!state.nomDossier.trim()) errors.nomDossier = "Le nom du dossier est requis.";
         if (!state.permissions.length) errors.permissions = "Au moins une permission est requise.";
+        if (!state.category?.trim()) errors.category = "Veuillez sélectionner une catégorie.";
+        if (!state.emplacement?.trim()) errors.emplacement = "Veuillez sélectionner un emplacement.";
         return errors;
     };
 
@@ -91,22 +110,32 @@ export default function FolderForm({ show, onHide, onSwitchToProductForm }) {
         });
     };
 
-    const handleReturn = () => {
-        dispatch({ type: "RESET_FORM" });
-        onSwitchToProductForm();
+    const handlePermissionChange = (permission) => {
+        const currentPermissions = [...state.permissions];
+        const permissionIndex = currentPermissions.indexOf(permission);
+
+        if (permissionIndex === -1) {
+            currentPermissions.push(permission);
+        } else {
+            currentPermissions.splice(permissionIndex, 1);
+        }
+
+        handleFieldChange("permissions", currentPermissions);
     };
 
     return (
         <Offcanvas show={show} onHide={onHide} placement="end" className="offcanvas-folder">
             <Offcanvas.Header closeButton>
                 <div className="d-flex flex-column w-100">
-                    <Button
-                        variant="link"
-                        onClick={handleReturn}
-                        className="p-0 text-decoration-none text-secondary align-self-start mb-2"
-                    >
-                        Retour au formulaire produit
-                    </Button>
+                    {isFromProductForm && (
+                        <Button
+                            variant="link"
+                            onClick={onSwitchToProductForm}
+                            className="p-0 text-decoration-none text-secondary align-self-start mb-2"
+                        >
+                            Retour au formulaire produit
+                        </Button>
+                    )}
                     <Offcanvas.Title className="h4">Ajouter un Dossier</Offcanvas.Title>
                 </div>
             </Offcanvas.Header>
@@ -170,72 +199,127 @@ export default function FolderForm({ show, onHide, onSwitchToProductForm }) {
                                 />
                             </Form.Group>
                         </Col>
+
+                        <Col md={12}>
+                            <Form.Group className="mb-3">
+                                <Form.Label>Catégorie *</Form.Label>
+                                <InputGroup>
+                                    <Form.Select
+                                        value={state.category}
+                                        onChange={(e) => handleFieldChange("category", e.target.value)}
+                                        isInvalid={!!state.formErrors.category}
+                                    >
+                                        <option value="">Sélectionner une catégorie</option>
+                                        {state.categories.map((category, index) => (
+                                            <option key={index} value={category}>
+                                                {category}
+                                            </option>
+                                        ))}
+                                    </Form.Select>
+                                    <Form.Control
+                                        placeholder="Nouvelle catégorie"
+                                        value={state.newCategory}
+                                        onChange={(e) => dispatch({ type: "SET_FIELD", field: "newCategory", value: e.target.value })}
+                                    />
+                                    <Button variant="outline-primary" onClick={() => dispatch({ type: "ADD_CATEGORY" })}>
+                                        <FaPlus />
+                                    </Button>
+                                    <Form.Control.Feedback type="invalid">
+                                        {state.formErrors.category}
+                                    </Form.Control.Feedback>
+                                </InputGroup>
+                            </Form.Group>
+                        </Col>
+
+                        <Col md={12}>
+                            <Form.Group className="mb-3">
+                                <Form.Label>Emplacement *</Form.Label>
+                                <InputGroup>
+                                    <Form.Select
+                                        value={state.emplacement}
+                                        onChange={(e) => handleFieldChange("emplacement", e.target.value)}
+                                        isInvalid={!!state.formErrors.emplacement}
+                                    >
+                                        <option value="">Sélectionner un emplacement</option>
+                                        {state.emplacements.map((emplacement, index) => (
+                                            <option key={index} value={emplacement}>
+                                                {emplacement}
+                                            </option>
+                                        ))}
+                                    </Form.Select>
+                                    <Form.Control
+                                        placeholder="Nouvel emplacement"
+                                        value={state.newEmplacement}
+                                        onChange={(e) => dispatch({ type: "SET_FIELD", field: "newEmplacement", value: e.target.value })}
+                                    />
+                                    <Button variant="outline-primary" onClick={() => dispatch({ type: "ADD_EMPLACEMENT" })}>
+                                        <FaPlus />
+                                    </Button>
+                                    <Form.Control.Feedback type="invalid">
+                                        {state.formErrors.emplacement}
+                                    </Form.Control.Feedback>
+                                </InputGroup>
+                            </Form.Group>
+                        </Col>
+
                         <Col md={12}>
                             <Form.Group className="mb-3">
                                 <Form.Label>Permissions *</Form.Label>
-                                <Form.Select
-                                    multiple
-                                    value={state.permissions}
-                                    onChange={(e) => {
-                                        const values = Array.from(e.target.selectedOptions, option => option.value);
-                                        handleFieldChange("permissions", values);
-                                    }}
-                                    isInvalid={!!state.formErrors.permissions}
-                                >
-                                    {predefinedPermissions.map((perm, index) => (
-                                        <option key={index} value={perm}>
-                                            {perm}
-                                        </option>
+                                <div className="d-flex flex-column">
+                                    {predefinedPermissions.map((permission, index) => (
+                                        <Form.Check
+                                            key={index}
+                                            type="checkbox"
+                                            id={`permission-${index}`}
+                                            label={permission}
+                                            checked={state.permissions.includes(permission)}
+                                            onChange={() => handlePermissionChange(permission)}
+                                            isInvalid={!!state.formErrors.permissions}
+                                            className={state.formErrors.permissions ? "is-invalid" : ""}
+                                        />
                                     ))}
-                                </Form.Select>
-                                <Form.Control.Feedback type="invalid">
-                                    {state.formErrors.permissions}
-                                </Form.Control.Feedback>
+                                    {state.formErrors.permissions && (
+                                        <div className="invalid-feedback">
+                                            {state.formErrors.permissions}
+                                        </div>
+                                    )}
+                                </div>
                             </Form.Group>
                         </Col>
                     </Row>
 
                     <div className="custom-fields mt-4">
                         <h5>Champs personnalisés</h5>
+                        {state.customFields.length === 0 && (
+                            <div className="text-muted">Aucun champ personnalisé ajouté.</div>
+                        )}
                         {state.customFields.map((field, index) => (
                             <Row key={index} className="g-3 align-items-center mb-2">
-                                <Col md={3}>
+                                <Col md={5}>
                                     <Form.Control
-                                        placeholder="Nom"
-                                        value={field.nom}
+                                        type="text"
+                                        placeholder="Nom du champ"
+                                        value={field.name}
                                         onChange={(e) =>
                                             dispatch({
                                                 type: "UPDATE_CUSTOM_FIELD",
                                                 index,
-                                                key: "nom",
+                                                key: "name",
                                                 value: e.target.value,
                                             })
                                         }
                                     />
                                 </Col>
-                                <Col md={3}>
+                                <Col md={5}>
                                     <Form.Control
-                                        placeholder="Type"
-                                        value={field.type}
+                                        type="text"
+                                        placeholder="Valeur"
+                                        value={field.value}
                                         onChange={(e) =>
                                             dispatch({
                                                 type: "UPDATE_CUSTOM_FIELD",
                                                 index,
-                                                key: "type",
-                                                value: e.target.value,
-                                            })
-                                        }
-                                    />
-                                </Col>
-                                <Col md={4}>
-                                    <Form.Control
-                                        placeholder="Correspond à"
-                                        value={field.correspondA}
-                                        onChange={(e) =>
-                                            dispatch({
-                                                type: "UPDATE_CUSTOM_FIELD",
-                                                index,
-                                                key: "correspondA",
+                                                key: "value",
                                                 value: e.target.value,
                                             })
                                         }
@@ -243,8 +327,18 @@ export default function FolderForm({ show, onHide, onSwitchToProductForm }) {
                                 </Col>
                                 <Col md={2}>
                                     <Button
-                                        variant="outline-danger"
-                                        onClick={() => dispatch({ type: "DELETE_CUSTOM_FIELD", index })}
+                                        variant="danger"
+                                        onClick={() =>
+                                            dispatch({ type: "DELETE_CUSTOM_FIELD", index })
+                                        }
+                                        style={{
+                                            width: "30px",
+                                            height: "30px",
+                                            padding: "0",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                        }}
                                     >
                                         <FaTrash />
                                     </Button>
@@ -260,7 +354,7 @@ export default function FolderForm({ show, onHide, onSwitchToProductForm }) {
                         </Button>
                     </div>
 
-                    <Button type="submit" className="mt-4 w-50">
+                    <Button type="submit" className="mt-4 w-100">
                         Enregistrer
                     </Button>
                 </Form>

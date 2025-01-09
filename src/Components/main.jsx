@@ -9,15 +9,13 @@ import {
     FaBarcode,
     FaUserAlt,
     FaBox,
-    FaCalculator,
     FaClipboardList,
     FaPrint,
-    FaMobileAlt,
     FaMapMarkedAlt,
     FaHome,
     FaSignOutAlt,
     FaBars,
-    FaTimes
+    FaTimes, FaFolder, FaTags
 } from 'react-icons/fa';
 import '../CSS/layout.css';
 import {Link, Navigate, Route, Routes, useLocation} from "react-router-dom";
@@ -27,18 +25,19 @@ import CreateQr from "./form/create_qr";
 import UsePrinterV2 from "./body/printer_v2";
 import Inventaire from "./inventaire/inventaire";
 import Index from "./body";
+import Dossiers from "./body/dossiers";
 
 const sidebarItems = [
     { icon: FaHome, label: 'Accueil' , path: '/'},
     { icon: FaBox, label: 'Inventaire', path: '/Inventaire' },
-    { icon: FaCalculator, label: 'Réappro Calcul' },
     { icon: FaBarcode, label: 'Sessions de Scan' },
     { icon: FaClipboardList, label: 'Commandes' },
     { icon: FaPrint, label: 'Impression' , path: '/Printer'},
     { icon: FaPrint, label: 'Impression V2', path: '/PrinterV2' },
-    { icon: FaBox, label: 'Produits' , path: '/Products' },
-    { icon: FaMobileAlt, label: 'Actifs Mobiles' },
-    { icon: FaMapMarkedAlt, label: 'Emplacements' },
+    { icon: FaBox, label: 'Produits' , path: '/Produits' },
+    { icon: FaFolder, label: 'Dossiers' , path: '/Dossiers' },
+    { icon: FaTags , label: 'Attributs' , path: '/Attributs' },
+    { icon: FaMapMarkedAlt, label: 'Emplacements' , path: '/Emplacements' },
     { icon: FaSignOutAlt, label: 'Déconnexion' },
 ];
 const CreateQrWrapper = () => {
@@ -124,12 +123,13 @@ export default function Layout() {
                 <div className={`content-area ${isMenuOpen ? 'sidebar-open' : ''}`}>
                     <div className="content-placeholder">
                         <Routes>
-                            <Route path="/Products" element={<Produits/>}/>
+                            <Route path="/Produits" element={<Produits/>}/>
                             <Route path="/" element={<Index/>}/>
                             <Route path="/Printer" element={<UsePrinter/>}/>
                             <Route path="/Printer/QrMaker" element={<CreateQrWrapper />} />
                             <Route path="/PrinterV2" element={<UsePrinterV2/>} />
                             <Route path="/Inventaire" element={<Inventaire />} />
+                            <Route path="/Dossiers" element={<Dossiers />} />
                         </Routes>
                     </div>
                 </div>
