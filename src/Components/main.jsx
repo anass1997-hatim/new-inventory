@@ -22,7 +22,7 @@ import {
 import '../CSS/layout.css';
 import {Link, Navigate, Route, Routes, useLocation} from "react-router-dom";
 import UsePrinter from "./body/printer";
-import Folders from "./body/folders";
+import Produits from "./body/produits";
 import CreateQr from "./form/create_qr";
 import UsePrinterV2 from "./body/printer_v2";
 import Inventaire from "./inventaire/inventaire";
@@ -124,7 +124,7 @@ export default function Layout() {
                 <div className={`content-area ${isMenuOpen ? 'sidebar-open' : ''}`}>
                     <div className="content-placeholder">
                         <Routes>
-                            <Route path="/Products" element={<Folders/>}/>
+                            <Route path="/Products" element={<Produits/>}/>
                             <Route path="/" element={<Index/>}/>
                             <Route path="/Printer" element={<UsePrinter/>}/>
                             <Route path="/Printer/QrMaker" element={<CreateQrWrapper />} />

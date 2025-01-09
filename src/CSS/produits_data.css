@@ -49,9 +49,7 @@ tbody tr {
     border-bottom: 1px solid var(--border-color);
 }
 
-tbody tr:hover {
-    background-color: var(--hover-bg-color);
-}
+
 
 tbody td {
     padding: var(--padding-medium);

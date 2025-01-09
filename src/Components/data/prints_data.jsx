@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Table } from "flowbite-react";
-import "../../CSS/folders_data.css";
+import "../../CSS/produits_data.css";
 import {FaEdit, FaTrash} from "react-icons/fa";
 
 export default function DisplayPrintsData({ data = [] }) {

@@ -4,7 +4,7 @@ import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 
 const Layout = lazy(() => import("./Components/main"));
 const Index = lazy(() => import("./Components/body"));
-const Folders = lazy(() => import("./Components/body/folders"));
+const Folders = lazy(() => import("./Components/body/produits"));
 const UsePrinter = lazy(() => import("./Components/body/printer"));
 const CreateQr = lazy(() => import("./Components/form/create_qr"));
 const UsePrinterV2 = lazy(() => import("./Components/body/printer_v2"));

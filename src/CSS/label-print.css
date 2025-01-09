@@ -1,18 +1,13 @@
-.printer-select-size{
-    padding: 5px 15px;
-    font-size: 0.78rem !important;
-}
 .qr-maker-container {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: stretch;
-    height: 530px;
+    height: 525px;
     background-color: #f9f9f9;
     padding: 10px 0;
 }
 
-/* Left panel for tools */
 .qr-tools {
     width: 18%;
     display: flex;
@@ -24,21 +19,29 @@
 }
 
 .qr-tool-button {
-    padding: 10px;
-    text-align: center;
-    background-color: #e9e9e9;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 10px;
+    color: white;
+    background-color: #105494;
     border: none;
     border-radius: 4px;
-    font-size: 14px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    height: 40px;
+    font-size: 0.75rem;
+    transition: background-color 0.2s ease;
+}
+
+.qr-tool-button:disabled {
+    background-color: #f2f2f2;
+    color: #105494;
 }
 
 .qr-tool-button:hover {
-    background-color: #d9d9d9;
+    background-color: #094a7d;
 }
 
-/* Center panel for preview */
 .qr-preview {
     flex: 1;
     padding: 10px;
@@ -50,106 +53,13 @@
     position: relative;
 }
 
-.qr-design {
-    width: 80%;
-    height: 100%;
-    position: relative;
-    border: 1px dashed #ccc;
-    background-color: #f5f5f5;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-}
-
-.qr-text-input {
-    border: 1px solid red;
-    padding: 5px;
-    font-size: 16px;
-    position: absolute;
-    background-color: transparent;
-}
-
-/* Right panel for editing fields */
-.qr-edit-panel {
-    width: 18%;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    padding: 10px;
-    background-color: #fff;
-    border: 1px solid #ddd;
-}
-
-.qr-edit-field {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.qr-edit-field label {
-    font-size: 14px;
-    color: #333;
-}
-
-.qr-edit-field input,
-.qr-edit-field select {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-.qr-maker-container .action-button {
-    padding: 8px 12px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s ease;
-}
-
-.qr-maker-container .action-button:hover {
-    background-color: #0056b3;
-}
-
-
-.qr-tool-button{
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px;
-    color: white;
-    background-color: #105494;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    font-size: 14px;
-    text-align: center;
-    height: 40px;
-    min-width: 120px;
-}
-.qr-tool-button label {
-    display: inline-block;
-    cursor: pointer;
-    text-align: center;
-    width: 100%;
-    height: 100%;
-    line-height: 20px;
-    color: white;
-}
-
-
 .dynamic-attributes-container {
-     margin: 2px 0;
-     padding: 10px;
-     background-color: #f9f9f9;
-     border: 1px solid #ddd;
-     border-radius: 5px;
- }
+    margin: 2px 0;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
 
 .attributes-header {
     font-weight: bold;
@@ -187,64 +97,43 @@
     border: 1px solid #105494;
 }
 
-.attribute-button span {
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.qr-tool-button:disabled{
-    background-color: #f2f2f2;
-    color: #105494;
+
+.qr-edit-field input[type="number"] , .qr-edit-field input[type="text"] {
+    width: 100%;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: #333;
+    background-color: #fff;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.barcode-type-selector{
-    display: flex;
-    font-size: 0.75rem;
-    gap: 10px;
+.qr-edit-field input[type="number"]:focus , .qr-edit-field input[type="text"]:focus {
+    border-color: #105494;
+    box-shadow: 0 0 5px rgba(16, 84, 148, 0.5);
+    outline: none;
 }
-.barcode-type-selector .qr-tool-selector-button {
-    padding: 2px 50px;
-    color: #fff;
-    font-size: 0.75rem;
-    background-color: #105494;
-}
-.button-group-print{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+.code-print-buttons , .code-print-buttons:active , .code-print-buttons:hover , .code-print-buttons:focus {
+    display: inline-flex;
     align-items: center;
-    gap: 5px;
-}
-
-.button-group-print .action-button {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.65rem;
+    justify-content: center;
+    padding: 5px 56px;
+    color: white;
     background-color: #105494;
-    color: #fff;
     border: none;
     border-radius: 4px;
-    padding: 6px 20px;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    text-align: center;
+    height: 30px;
+    font-size: 0.75rem;
+    transition: background-color 0.2s ease;
 }
-
+.code-print-dropdown dropdown-item{
+    color: #105494;
+}
 @media print {
-    .print-container {
-        background-color: white !important;
-    }
-
-    .print-content {
-        width: 100%;
-        height: 100%;
-    }
-
-    /* Hide non-printable elements */
-    .qr-tools,
-    .button-group-print {
+    .qr-tools {
         display: none !important;
     }
 }

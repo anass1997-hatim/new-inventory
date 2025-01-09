@@ -1,51 +1,40 @@
 import { useState } from "react";
 import { Table } from "flowbite-react";
-import { FaEdit, FaTrash } from "react-icons/fa";
-import "../../CSS/categories_data.css";
+import "../../CSS/produits_data.css";
+import { FaBox, FaEdit, FaTrash } from "react-icons/fa";
 
-export default function DisplayCategoriesData({ folder, onBack }) {
-    const categoriesData = [
-        { category: "Catégorie 1", description: "Description 1" },
-        { category: "Catégorie 2", description: "Description 2" },
-        { category: "Catégorie 3", description: "Description 3" },
-        { category: "Catégorie 4", description: "Description 4" },
-        { category: "Catégorie 5", description: "Description 5" },
-        { category: "Catégorie 6", description: "Description 6" },
-        { category: "Catégorie 7", description: "Description 7" },
-        { category: "Catégorie 8", description: "Description 8" },
-        { category: "Catégorie 9", description: "Description 9" },
-        { category: "Catégorie 10", description: "Description 10" },
-    ];
+export default function DisplayProduitsData({ data = [] }) {
 
     const [currentPage, setCurrentPage] = useState(1);
-    const rowsPerPage = 5;
+    const rowsPerPage = 7;
 
-    const totalPages = Math.max(1, Math.ceil(categoriesData.length / rowsPerPage));
 
+    const totalPages = Math.max(1, Math.ceil(data.length / rowsPerPage));
     const handlePageChange = (page) => {
         if (page >= 1 && page <= totalPages) {
             setCurrentPage(page);
         }
     };
 
-    const paginatedData = categoriesData.slice(
+    const paginatedData = data.slice(
         (currentPage - 1) * rowsPerPage,
         currentPage * rowsPerPage
     );
 
+
     return (
-        <div className="categories-container">
-            <div className="header">
-                <h3 className="title">Catégories liées à : {folder.Titre}</h3>
-                <button className="back-button" onClick={onBack}>
-                    Retour
-                </button>
-            </div>
-            <Table hoverable={true} striped={true} className="categories-table">
+        <div className="folders-data-container">
+            <Table hoverable={true} striped={true}>
                 <thead>
                 <tr>
-                    <th>Catégorie</th>
-                    <th>Description</th>
+                    <th></th>
+                    <th>Produit</th>
+                    <th>Quantité</th>
+                    <th>Prix</th>
+                    <th>Quantité Disponible</th>
+                    <th>Date de Création</th>
+                    <th>Date d'expiration</th>
+                    <th>Créé par</th>
                     <th>Modifier</th>
                     <th>Supprimer</th>
                 </tr>
@@ -53,19 +42,32 @@ export default function DisplayCategoriesData({ folder, onBack }) {
                 <tbody>
                 {paginatedData.length === 0 ? (
                     <tr>
-                        <td colSpan="4" className="text-center">
-                            Aucune catégorie disponible.
+                        <td colSpan="10" className="text-center">
+                            Aucune donnée disponible à afficher.
                         </td>
                     </tr>
                 ) : (
-                    paginatedData.map((category, index) => (
-                        <tr key={index}>
-                            <td>{category.category}</td>
-                            <td>{category.description}</td>
+                    paginatedData.map((row, rowIndex) => (
+                        <tr>
+                            <td>
+                                <div className="product-icon">
+                                    <FaBox />
+                                </div>
+                            </td>
+                            <td>
+                                {row.Titre || "-"} | {row["Code-barres"] || "-"} | {row.Catégorie || "-"}
+                            </td>
+                            <td>{row.Quantité || "-"}</td>
+                            <td>{row.Prix || "-"}</td>
+                            <td>{row["Quantité Disponible"] || "-"}</td>
+                            <td>{row["Date de Création"] || "-"}</td>
+                            <td>{row["Date d'expiration"] || "-"}</td>
+                            <td>{row["Créé par"] || "-"}</td>
                             <td>
                                 <button
                                     className="edit-button-folder"
-                                    aria-label="Modifier catégorie"
+                                    aria-label="Modifier"
+                                    onClick={(e) => e.stopPropagation()}
                                 >
                                     <FaEdit />
                                 </button>
@@ -73,7 +75,8 @@ export default function DisplayCategoriesData({ folder, onBack }) {
                             <td>
                                 <button
                                     className="delete-button-folder"
-                                    aria-label="Supprimer catégorie"
+                                    aria-label="Supprimer"
+                                    onClick={(e) => e.stopPropagation()}
                                 >
                                     <FaTrash />
                                 </button>

@@ -1,0 +1,105 @@
+.products-modals .modal-dialog {
+    max-width: 95%;
+}
+
+.products-modals .modal-content {
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.products-modals .modal-header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 1rem;
+}
+
+.products-modals .modal-footer {
+    border-top: 1px solid #dee2e6;
+    padding: 1rem;
+}
+
+.products-modals table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+.products-modals table th,
+.products-modals table td {
+    border: 1px solid #dee2e6;
+    padding: 8px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.products-modals table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+.products-modals .modal-footer .btn {
+    width: 120px;
+    font-size: 0.7rem;
+    text-align: center;
+}
+
+.products-modals .btn-primary {
+    background-color: #28a745;
+    border-color: #28a745;
+    font-weight: bold;
+}
+
+.products-modals .btn-primary:hover {
+    background-color: #218838;
+}
+
+.products-modals .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.products-modals .btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.pagination-controls {
+    font-size: 1rem;
+}
+
+.pagination-controls button {
+    background-color: var(--primary-color);
+    color: white;
+    border: 1px solid var(--primary-color);
+    font-weight: bold;
+    width: 120px;
+    font-size: 0.7rem;
+    border-radius: 4px;
+    transition: background-color 0.3s, transform 0.2s;
+    height: 25px;
+}
+
+.pagination-controls button:hover {
+    background-color: var(--primary-color);
+    transform: scale(1.05);
+    color: white;
+    height: 25px;
+}
+
+.pagination-controls button:disabled {
+    background-color: #e9ecef;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+    cursor: not-allowed;
+    height: 25px;
+}
+.products-modals .modal-footer {
+    border-top: 1px solid #dee2e6;
+    padding: 0.5rem 1rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    height: auto;
+}
