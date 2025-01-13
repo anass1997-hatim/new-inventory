@@ -26,6 +26,7 @@ import UsePrinterV2 from "./body/printer_v2";
 import Inventaire from "./inventaire/inventaire";
 import Index from "./body";
 import Dossiers from "./body/dossiers";
+import Emplacement from "./body/emplacement";
 
 const sidebarItems = [
     { icon: FaHome, label: 'Accueil' , path: '/'},
@@ -84,9 +85,11 @@ export default function Layout() {
                                     <Button
                                         key={index}
                                         className="navbar-options d-flex flex-column align-items-center"
+                                        style={{backgroundColor : 'white' , color : '#105494'
+                                    , fontSize: '0.9rem'}}
                                     >
                                         <Icon />
-                                        <span className="button-label">
+                                        <span className="button-label-menu">
                                             {['Scan', 'Notify', 'User'][index]}
                                         </span>
                                     </Button>
@@ -130,6 +133,7 @@ export default function Layout() {
                             <Route path="/PrinterV2" element={<UsePrinterV2/>} />
                             <Route path="/Inventaire" element={<Inventaire />} />
                             <Route path="/Dossiers" element={<Dossiers />} />
+                            <Route path="/Emplacements" element={<Emplacement />} />
                         </Routes>
                     </div>
                 </div>

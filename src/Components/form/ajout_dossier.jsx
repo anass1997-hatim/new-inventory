@@ -1,6 +1,7 @@
 import { useReducer } from "react";
 import { Offcanvas, Form, Button, Row, Col, InputGroup } from "react-bootstrap";
-import { FaPlus, FaTrash } from "react-icons/fa";
+import {FaFolderPlus, FaPlus, FaTrash} from "react-icons/fa";
+import '../../CSS/ajout_produit.css'
 
 const predefinedPermissions = ["Lecture", "Suppression", "Modification"];
 const initialState = {
@@ -75,10 +76,11 @@ export default function FolderForm({ show, onHide, onSwitchToProductForm, isFrom
         const errors = {};
         if (!state.identifiant.trim()) errors.identifiant = "L'identifiant est requis.";
         if (!state.codebarres.trim()) errors.codebarres = "Le code-barres est requis.";
-        if (!state.nomDossier.trim()) errors.nomDossier = "Le nom du dossier est requis.";
         if (!state.permissions.length) errors.permissions = "Au moins une permission est requise.";
-        if (!state.category?.trim()) errors.category = "Veuillez sélectionner une catégorie.";
-        if (!state.emplacement?.trim()) errors.emplacement = "Veuillez sélectionner un emplacement.";
+        if (!state.titre?.trim()) errors.titre = "Le titre est requis.";
+        if (!state.quantite?.toString().trim()) errors.quantite = "La quantité est requise.";
+        if (!state.prix?.toString().trim()) errors.prix = "Le prix est requis.";
+        if (!state.quantiteDisponible?.toString().trim()) errors.quantiteDisponible = "La quantité disponible est requise.";
         return errors;
     };
 
@@ -136,7 +138,11 @@ export default function FolderForm({ show, onHide, onSwitchToProductForm, isFrom
                             Retour au formulaire produit
                         </Button>
                     )}
-                    <Offcanvas.Title className="h4">Ajouter un Dossier</Offcanvas.Title>
+                    <Offcanvas.Title className="h4 d-flex align-items-center">
+                        <FaFolderPlus style={{ marginRight: "10px" }} />
+                        Ajouter un Dossier
+                    </Offcanvas.Title>
+
                 </div>
             </Offcanvas.Header>
             <Offcanvas.Body>
@@ -144,59 +150,63 @@ export default function FolderForm({ show, onHide, onSwitchToProductForm, isFrom
                     <Row className="g-3">
                         <Col md={6}>
                             <Form.Group className="mb-3">
-                                <Form.Label>Identifiant *</Form.Label>
+                                <Form.Label>Titre *</Form.Label>
                                 <Form.Control
                                     type="text"
-                                    placeholder="Entrer l'identifiant"
-                                    value={state.identifiant}
-                                    onChange={(e) => handleFieldChange("identifiant", e.target.value)}
-                                    isInvalid={!!state.formErrors.identifiant}
+                                    placeholder="Entrer le titre"
+                                    value={state.titre}
+                                    onChange={(e) => handleFieldChange("titre", e.target.value)}
+                                    isInvalid={!!state.formErrors.titre}
                                 />
                                 <Form.Control.Feedback type="invalid">
-                                    {state.formErrors.identifiant}
+                                    {state.formErrors.titre}
                                 </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
                         <Col md={6}>
                             <Form.Group className="mb-3">
-                                <Form.Label>Code-barres *</Form.Label>
+                                <Form.Label>Quantité *</Form.Label>
                                 <Form.Control
-                                    type="text"
-                                    placeholder="Entrer le code-barres"
-                                    value={state.codebarres}
-                                    onChange={(e) => handleFieldChange("codebarres", e.target.value)}
-                                    isInvalid={!!state.formErrors.codebarres}
+                                    type="number"
+                                    placeholder="Entrer la quantité"
+                                    value={state.quantite}
+                                    onChange={(e) => handleFieldChange("quantite", e.target.value)}
+                                    isInvalid={!!state.formErrors.quantite}
                                 />
                                 <Form.Control.Feedback type="invalid">
-                                    {state.formErrors.codebarres}
+                                    {state.formErrors.quantite}
                                 </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
                         <Col md={12}>
                             <Form.Group className="mb-3">
-                                <Form.Label>Nom du dossier *</Form.Label>
+                                <Form.Label>Prix *</Form.Label>
                                 <Form.Control
-                                    type="text"
-                                    placeholder="Entrer le nom du dossier"
-                                    value={state.nomDossier}
-                                    onChange={(e) => handleFieldChange("nomDossier", e.target.value)}
-                                    isInvalid={!!state.formErrors.nomDossier}
+                                    type="number"
+                                    step="0.01"
+                                    placeholder="Entrer le prix"
+                                    value={state.prix}
+                                    onChange={(e) => handleFieldChange("prix", e.target.value)}
+                                    isInvalid={!!state.formErrors.prix}
                                 />
                                 <Form.Control.Feedback type="invalid">
-                                    {state.formErrors.nomDossier}
+                                    {state.formErrors.prix}
                                 </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
                         <Col md={12}>
                             <Form.Group className="mb-3">
-                                <Form.Label>Description</Form.Label>
+                                <Form.Label>Quantité Disponible *</Form.Label>
                                 <Form.Control
-                                    as="textarea"
-                                    rows={3}
-                                    placeholder="Entrer la description"
-                                    value={state.description}
-                                    onChange={(e) => handleFieldChange("description", e.target.value)}
+                                    type="number"
+                                    placeholder="Entrer la quantité disponible"
+                                    value={state.quantiteDisponible}
+                                    onChange={(e) => handleFieldChange("quantiteDisponible", e.target.value)}
+                                    isInvalid={!!state.formErrors.quantiteDisponible}
                                 />
+                                <Form.Control.Feedback type="invalid">
+                                    {state.formErrors.quantiteDisponible}
+                                </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
 

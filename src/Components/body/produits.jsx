@@ -1,8 +1,8 @@
 import '../../CSS/shared.css';
 import Container from "react-bootstrap/Container";
-import { Col, InputGroup, Nav, Row, Form, Button } from "react-bootstrap";
+import { Col, InputGroup, Nav, Row, Form, Button, Dropdown } from "react-bootstrap";
 import { FaSearch, FaPlus, FaFileImport, FaFileExport, FaFileExcel } from "react-icons/fa";
-import { useReducer, useRef } from "react";
+import { useReducer, useRef, useState } from "react";
 import DisplayProductData from '../data/data_produits';
 import * as XLSX from "xlsx";
 import ValidationModal from "../modals/produits_modal";
@@ -74,6 +74,16 @@ const reducer = (state, action) => {
 export default function Produits() {
     const [state, dispatch] = useReducer(reducer, initialState);
     const fileInputRef = useRef(null);
+    const [filterText, setFilterText] = useState(""); // State for filtering
+    const [hiddenColumns, setHiddenColumns] = useState([]); // State to manage hidden columns
+
+    const toggleColumn = (columnName) => {
+        setHiddenColumns((prev) =>
+            prev.includes(columnName)
+                ? prev.filter((col) => col !== columnName)
+                : [...prev, columnName]
+        );
+    };
 
     const validateExcelData = (data) => {
         if (!Array.isArray(data) || data.length === 0) {
@@ -216,6 +226,16 @@ export default function Produits() {
         }
     };
 
+
+    const filteredData = state.uploadedData.filter((item) => {
+        const searchText = filterText.toLowerCase();
+        return (
+            item.Titre?.toLowerCase().includes(searchText) ||
+            item["Code-barres"]?.toLowerCase().includes(searchText) ||
+            item.Catégorie?.toLowerCase().includes(searchText)
+        );
+    });
+
     return (
         <>
             <div className="products-container">
@@ -223,7 +243,11 @@ export default function Produits() {
                     <Row className="align-items-center justify-content-between">
                         <Col>
                             <InputGroup className="search-input-group">
-                                <Form.Control placeholder="Rechercher produits" />
+                                <Form.Control
+                                    placeholder="Rechercher produits"
+                                    value={filterText}
+                                    onChange={(e) => setFilterText(e.target.value)}
+                                />
                                 <Button variant="primary"><FaSearch /></Button>
                             </InputGroup>
                         </Col>
@@ -279,9 +303,19 @@ export default function Produits() {
                     <Nav.Item><Nav.Link eventKey="Active">Active</Nav.Link></Nav.Item>
                     <Nav.Item><Nav.Link eventKey="Inactive">Inactive</Nav.Link></Nav.Item>
                     <Nav.Item><Nav.Link eventKey="Déstockage">Déstockage</Nav.Link></Nav.Item>
+                    <Dropdown as={Nav.Item}>
+                        <Dropdown.Toggle as={Nav.Link}>Filtrer</Dropdown.Toggle>
+                        <Dropdown.Menu className="dropdown-menu-filter">
+                            {necessaryFields.map((field) => (
+                                <Dropdown.Item key={field} onClick={() => toggleColumn(field)}>
+                                    {hiddenColumns.includes(field) ? `Afficher ${field}` : `Masquer ${field}`}
+                                </Dropdown.Item>
+                            ))}
+                        </Dropdown.Menu>
+                    </Dropdown>
                 </Nav>
                 <div className="tab-content mt-3">
-                    {state.activeTab === 'Active' && <DisplayProductData data={state.uploadedData} />}
+                    {state.activeTab === 'Active' && <DisplayProductData data={filteredData} hiddenColumns={hiddenColumns} />}
                     {state.activeTab === 'Inactive' && <div>Inactive Content</div>}
                     {state.activeTab === 'Déstockage' && <div>Déstockage Content</div>}
                 </div>

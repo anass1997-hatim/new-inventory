@@ -56,11 +56,11 @@ tbody td {
     color: var(--text-color);
 }
 
-tbody td img {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-    transition: transform 0.2s ease;
+th .sort-icon {
+    font-size: 0.9rem ;
+}
+.product-icon ,.emplacement-icon {
+    color: var(--primary-color);
 }
 
 tbody td img:hover {
@@ -102,7 +102,8 @@ tbody td img:hover {
 }
 
 .edit-button-folder,
-.delete-button-folder {
+.delete-button-folder,
+.associate-button-folder{
     font-size: 1rem;
     background-color: var(--secondary-color);
     border: none;
@@ -112,6 +113,11 @@ tbody td img:hover {
 
 .edit-button-folder {
     color: var(--primary-color);
+}
+
+.associate-button-folder {
+    color: #6c757d;
+
 }
 
 .edit-button-folder:hover {

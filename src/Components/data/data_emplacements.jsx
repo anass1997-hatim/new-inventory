@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Table } from "flowbite-react";
 import "../../CSS/produits_data.css";
-import { FaBox, FaEdit, FaTrash, FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
+import { FaMapMarkerAlt, FaEdit, FaTrash, FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 
-export default function DisplayProduitsData({ data = [], hiddenColumns = [] }) {
+export default function DisplayEmplacementsData({ data = [], hiddenColumns = [] }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
     const rowsPerPage = 7;
@@ -29,15 +29,8 @@ export default function DisplayProduitsData({ data = [], hiddenColumns = [] }) {
     const sortedData = [...data].sort((a, b) => {
         if (!sortConfig.key) return 0;
 
-        let aValue, bValue;
-
-        if (sortConfig.key === "Produit") {
-            aValue = a["Titre"] || "";
-            bValue = b["Titre"] || "";
-        } else {
-            aValue = a[sortConfig.key] || "";
-            bValue = b[sortConfig.key] || "";
-        }
+        const aValue = a[sortConfig.key] || "";
+        const bValue = b[sortConfig.key] || "";
 
         if (typeof aValue === "number" && typeof bValue === "number") {
             return sortConfig.direction === "asc" ? aValue - bValue : bValue - aValue;
@@ -70,29 +63,15 @@ export default function DisplayProduitsData({ data = [], hiddenColumns = [] }) {
                 <thead>
                 <tr>
                     <th></th>
-                    {!isColumnHidden("Identifiant") && (
-                        <th onClick={() => handleSort("Identifiant")}>Identifiant {renderSortIcon("Identifiant")}</th>
+                    {!isColumnHidden("id") && (
+                        <th onClick={() => handleSort("id")}>
+                            ID {renderSortIcon("id")}
+                        </th>
                     )}
-                    {!isColumnHidden("Produit") && (
-                        <th onClick={() => handleSort("Titre")}>Produit {renderSortIcon("Produit")}</th>
-                    )}
-                    {!isColumnHidden("Quantité") && (
-                        <th onClick={() => handleSort("Quantité")}>Quantité {renderSortIcon("Quantité")}</th>
-                    )}
-                    {!isColumnHidden("Prix") && (
-                        <th onClick={() => handleSort("Prix")}>Prix {renderSortIcon("Prix")}</th>
-                    )}
-                    {!isColumnHidden("Quantité Disponible") && (
-                        <th onClick={() => handleSort("Quantité Disponible")}>Quantité Disponible {renderSortIcon("Quantité Disponible")}</th>
-                    )}
-                    {!isColumnHidden("Date de Création") && (
-                        <th onClick={() => handleSort("Date de Création")}>Date de Création {renderSortIcon("Date de Création")}</th>
-                    )}
-                    {!isColumnHidden("Date d'expiration") && (
-                        <th onClick={() => handleSort("Date d'expiration")}>Date d'expiration {renderSortIcon("Date d'expiration")}</th>
-                    )}
-                    {!isColumnHidden("Créé par") && (
-                        <th onClick={() => handleSort("Créé par")}>Créé par {renderSortIcon("Créé par")}</th>
+                    {!isColumnHidden("emplacement") && (
+                        <th onClick={() => handleSort("emplacement")}>
+                            Emplacement {renderSortIcon("emplacement")}
+                        </th>
                     )}
                     <th>Modifier</th>
                     <th>Supprimer</th>
@@ -101,7 +80,7 @@ export default function DisplayProduitsData({ data = [], hiddenColumns = [] }) {
                 <tbody>
                 {paginatedData.length === 0 ? (
                     <tr>
-                        <td colSpan="10" className="text-center">
+                        <td colSpan="4" className="text-center">
                             Aucune donnée disponible à afficher.
                         </td>
                     </tr>
@@ -109,30 +88,12 @@ export default function DisplayProduitsData({ data = [], hiddenColumns = [] }) {
                     paginatedData.map((row, rowIndex) => (
                         <tr key={rowIndex}>
                             <td>
-                                <div className="product-icon">
-                                    <FaBox />
+                                <div className="emplacement-icon">
+                                    <FaMapMarkerAlt />
                                 </div>
                             </td>
-                            {!isColumnHidden("Identifiant") && <td>{row.Identifiant || "-"}</td>}
-                            {!isColumnHidden("Produit") && (
-                                <td>
-                                    {row.Titre || "-"} |
-                                    {!isColumnHidden("Code-barres") && ` ${row["Code-barres"] || "-"} |`}
-                                    {!isColumnHidden("Catégorie") && ` ${row.Catégorie || "-"}`}
-                                </td>
-                            )}
-                            {!isColumnHidden("Quantité") && <td>{row.Quantité || "-"}</td>}
-                            {!isColumnHidden("Prix") && <td>{row.Prix || "-"}</td>}
-                            {!isColumnHidden("Quantité Disponible") && (
-                                <td>{row["Quantité Disponible"] || "-"}</td>
-                            )}
-                            {!isColumnHidden("Date de Création") && (
-                                <td>{row["Date de Création"] || "-"}</td>
-                            )}
-                            {!isColumnHidden("Date d'expiration") && (
-                                <td>{row["Date d'expiration"] || "-"}</td>
-                            )}
-                            {!isColumnHidden("Créé par") && <td>{row["Créé par"] || "-"}</td>}
+                            {!isColumnHidden("id") && <td>{row.id || "-"}</td>}
+                            {!isColumnHidden("emplacement") && <td>{row.emplacement || "-"}</td>}
                             <td>
                                 <button
                                     className="edit-button-folder"

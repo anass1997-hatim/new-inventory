@@ -9,8 +9,7 @@
     --transition-speed: 0.2s ease;
 }
 
-/* Offcanvas Folder */
-.offcanvas-folder {
+.offcanvas-emplacement {
     width: 40% !important;
     padding: 1rem;
     background-color: var(--secondary-color);
@@ -19,39 +18,38 @@
     transition: width var(--transition-speed);
 }
 
-.offcanvas-folder .offcanvas-header {
+.offcanvas-emplacement .offcanvas-header {
     border-bottom: 1px solid #ddd;
     margin-bottom: 1rem;
     padding-bottom: 1rem;
 }
 
-.offcanvas-folder .offcanvas-title {
+.offcanvas-emplacement .offcanvas-title {
     font-size: var(--font-size-large);
     font-weight: 600;
     color: var(--primary-color);
 }
 
-/* Form Styling */
-.offcanvas-folder form {
+.offcanvas-emplacement form {
     display: flex;
     flex-direction: column;
     gap: 1.2rem;
 }
 
-.offcanvas-folder form .form-group {
+.offcanvas-emplacement form .form-group {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 }
 
-.offcanvas-folder form .form-label {
+.offcanvas-emplacement form .form-label {
     font-size: var(--font-size-medium);
     font-weight: 600;
     color: var(--primary-color);
 }
 
-.offcanvas-folder form .form-control,
-.offcanvas-folder form .form-select {
+.offcanvas-emplacement form .form-control,
+.offcanvas-emplacement form .form-select {
     font-size: var(--font-size-small);
     padding: 0.5rem 0.75rem;
     border: 1px solid #ddd;
@@ -59,13 +57,12 @@
     transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
 }
 
-.offcanvas-folder form .form-control:focus,
-.offcanvas-folder form .form-select:focus {
+.offcanvas-emplacement form .form-control:focus,
+.offcanvas-emplacement form .form-select:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 0.1rem rgba(16, 84, 148, 0.25);
 }
 
-/* File Input */
 .file-input-wrapper {
     display: flex;
     align-items: center;
@@ -89,8 +86,7 @@
     background-color: #083d73;
 }
 
-/* Buttons */
-.offcanvas-folder .btn-primary {
+.offcanvas-emplacement .btn-primary {
     background-color: var(--primary-color);
     color: var(--secondary-color);
     font-size: var(--font-size-small);
@@ -101,11 +97,11 @@
     transition: background-color var(--transition-speed), transform var(--transition-speed);
 }
 
-.offcanvas-folder .btn-primary:hover {
+.offcanvas-emplacement .btn-primary:hover {
     background-color: #083d73;
 }
 
-.offcanvas-folder .btn-outline-primary {
+.offcanvas-emplacement .btn-outline-primary {
     font-size: var(--font-size-small);
     font-weight: 600;
     padding: 0.4rem 0.8rem;
@@ -115,12 +111,11 @@
     transition: background-color var(--transition-speed), transform var(--transition-speed);
 }
 
-.offcanvas-folder .btn-outline-primary:hover {
+.offcanvas-emplacement .btn-outline-primary:hover {
     background-color: var(--primary-color);
     color: var(--secondary-color);
 }
 
-/* Custom Fields */
 .custom-fields h5 {
     font-size: var(--font-size-medium);
     font-weight: 600;
@@ -135,21 +130,20 @@
 }
 
 .row.g-3 {
-    row-gap: 0.5rem;
+    row-gap: 0.5rem; /* Increased for better spacing */
 }
 
-.image-name-folder {
+.image-name-emplacement {
     font-size: var(--font-size-medium);
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
-    .offcanvas-folder {
+    .offcanvas-emplacement {
         width: 100%;
     }
 
-    .offcanvas-folder form .form-control,
-    .offcanvas-folder form .form-select {
+    .offcanvas-emplacement form .form-control,
+    .offcanvas-emplacement form .form-select {
         font-size: var(--font-size-small);
         padding: 0.4rem 0.6rem;
     }
@@ -158,109 +152,4 @@
         width: 35px;
         height: 35px;
     }
-}
-
-/* Table Styling */
-.dossiers-data-container table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.dossiers-data-container table td,
-.dossiers-data-container table th {
-    vertical-align: middle;
-    padding: 0.5rem 0.75rem;
-}
-
-.dossiers-data-container table thead th {
-    text-align: left;
-    font-weight: bold;
-    background-color: #f5f5f5;
-}
-
-.dossiers-data-container table tbody tr {
-    height: 2.5rem;
-}
-
-.dossiers-data-container table tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-.dossiers-data-container table tbody tr:hover {
-    background-color: #eaf4fc;
-}
-
-/* Pagination */
-.pagination-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-.pagination-btn {
-    background-color: var(--primary-color);
-    color: var(--secondary-color);
-    border: none;
-    padding: 0.4rem 0.8rem;
-    font-size: 0.8rem;
-    border-radius: 0.25rem;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.pagination-btn:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-}
-
-.pagination-btn:hover:not(:disabled) {
-    background-color: #083d73;
-}
-
-/* Icons and Buttons */
-.folder-icon {
-    color: var(--primary-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.associate-button-folder,
-.edit-button-folder,
-.delete-button-folder {
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 0.2rem 0.5rem;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color var(--transition-speed);
-}
-
-.associate-button-folder {
-    color: #28a745;
-}
-
-.associate-button-folder:hover {
-    color: #1e7b32;
-}
-
-.edit-button-folder {
-    color: var(--primary-color);
-}
-
-.edit-button-folder:hover {
-    color: #083d73;
-}
-
-.delete-button-folder {
-    color: #dc3545;
-}
-
-.delete-button-folder:hover {
-    color: #b02a37;
 }

@@ -1,35 +1,23 @@
 import '../../CSS/shared.css';
 import Container from "react-bootstrap/Container";
-import { Col, InputGroup, Nav, Row, Form, Button, Dropdown } from "react-bootstrap";
+import { Col, InputGroup, Row, Form, Button, Nav } from "react-bootstrap";
 import { FaSearch, FaPlus, FaFileImport, FaFileExport, FaFileExcel } from "react-icons/fa";
 import { useReducer, useRef, useState } from "react";
-import DisplayDossiersData from '../data/data_dossiers';
 import * as XLSX from "xlsx";
-import ValidationModal from "../modals/dossiers_modal";
-import FolderForm from "../form/ajout_dossier";
+import DisplayEmplacementsData from '../data/data_emplacements';
+import EmplacementForm from "../form/ajout_emplacement";
+import ValidationModal from "../modals/emplacement_modal";
 
 const necessaryFields = [
-    "Identifiant",
-    "Code-barres",
-    "Nom du dossier",
-    "Emplacement",
-    "Description",
-    "Permission",
-    "Créé le",
+    "id",
+    "emplacement",
 ];
 
-const optionalFields = [
-    "Numéro de commande",
-    "Nom de la dernière intervention",
-    "Ville",
-    "Bâtiment",
-    "Étage",
-    "Salle"
-];
+const optionalFields = [];
 
 const initialState = {
     activeTab: 'Active',
-    showFolderForm: false,
+    showForm: false,
     uploadedData: [],
     parsedData: [],
     validationSummary: [],
@@ -41,8 +29,8 @@ const reducer = (state, action) => {
     switch (action.type) {
         case 'SET_ACTIVE_TAB':
             return { ...state, activeTab: action.payload };
-        case 'TOGGLE_FOLDER_FORM':
-            return { ...state, showFolderForm: action.payload };
+        case 'TOGGLE_FORM':
+            return { ...state, showForm: action.payload };
         case 'SET_UPLOADED_DATA':
             return { ...state, uploadedData: action.payload };
         case 'SET_PARSED_DATA':
@@ -61,24 +49,20 @@ const reducer = (state, action) => {
                 showModal: false,
                 isProcessingFile: false,
             };
+        case 'ADD_EMPLACEMENT':
+            return {
+                ...state,
+                uploadedData: [...state.uploadedData, action.payload],
+            };
         default:
             return state;
     }
 };
 
-export default function Dossiers() {
+export default function Emplacements() {
     const [state, dispatch] = useReducer(reducer, initialState);
     const fileInputRef = useRef(null);
-    const [filterText, setFilterText] = useState("");
-    const [hiddenColumns, setHiddenColumns] = useState([]);
-
-    const toggleColumn = (columnName) => {
-        setHiddenColumns((prev) =>
-            prev.includes(columnName)
-                ? prev.filter((col) => col !== columnName)
-                : [...prev, columnName]
-        );
-    };
+    const [filterText, setFilterText] = useState(""); // State for filtering
 
     const validateExcelData = (data) => {
         if (!Array.isArray(data) || data.length === 0) {
@@ -138,27 +122,12 @@ export default function Dossiers() {
 
     const handleConfirmImport = () => {
         const normalizedData = state.parsedData.map((row) => ({
-            Identifiant: row["Identifiant"] || "-",
-            "Code-barres": row["Code-barres"] || "-",
-            "Nom du dossier": row["Nom du dossier"] || "-",
-            Emplacement: row["Emplacement"] || "-",
-            Description: row["Description"] || "-",
-            Permission: row["Permission"] || "-",
-            "Créé le": row["Créé le"] || "-",
-            "Numéro de commande": row["Numéro de commande"] || "-",
-            "Nom de la dernière intervention": row["Nom de la dernière intervention"] || "-",
-            Ville: row["Ville"] || "-",
-            Bâtiment: row["Bâtiment"] || "-",
-            Étage: row["Étage"] || "-",
-            Salle: row["Salle"] || "-"
+            id: row["id"] || "-",
+            emplacement: row["emplacement"] || "-",
         }));
 
         const newData = [...state.uploadedData, ...normalizedData];
         dispatch({ type: 'SET_UPLOADED_DATA', payload: newData });
-        dispatch({ type: 'RESET_IMPORT_DATA' });
-    };
-
-    const handleCancelImport = () => {
         dispatch({ type: 'RESET_IMPORT_DATA' });
     };
 
@@ -171,8 +140,8 @@ export default function Dossiers() {
         try {
             const worksheet = XLSX.utils.json_to_sheet(state.uploadedData);
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Dossiers");
-            XLSX.writeFile(workbook, `dossiers_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Emplacements");
+            XLSX.writeFile(workbook, `emplacements_export_${new Date().toISOString().split('T')[0]}.xlsx`);
         } catch (error) {
             console.error("Erreur lors de l'exportation:", error);
             alert("Erreur lors de l'exportation du fichier");
@@ -182,33 +151,27 @@ export default function Dossiers() {
     const handleDownloadExample = () => {
         const exampleData = [
             {
-                Identifiant: "DOS001",
-                "Code-barres": "123456789",
-                "Nom du dossier": "Exemple Dossier",
-                Emplacement: "Emplacement exemple",
-                Description: "Description exemple",
-                Permission: "Lecture, Modification",
-                "Créé le": new Date().toISOString().split("T")[0],
-                "Numéro de commande": "CMD001",
-                "Nom de la dernière intervention": "Maintenance préventive",
-                Ville: "Paris",
-                Bâtiment: "Bâtiment A",
-                Étage: "2ème étage",
-                Salle: "Salle 204"
+                id: "EMPL001",
+                emplacement: "Zone A - Section 2",
             },
         ];
 
         const worksheet = XLSX.utils.json_to_sheet(exampleData);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Exemple");
-        XLSX.writeFile(workbook, "modele_dossiers.xlsx");
+        XLSX.writeFile(workbook, "modele_emplacements.xlsx");
+    };
+
+    const addNewEmplacement = (emplacementData) => {
+        dispatch({ type: 'ADD_EMPLACEMENT', payload: emplacementData });
+        dispatch({ type: 'TOGGLE_FORM', payload: false });
     };
 
     const filteredData = state.uploadedData.filter((item) => {
         const searchText = filterText.toLowerCase();
         return (
-            item["Nom du dossier"]?.toLowerCase().includes(searchText) ||
-            item["Code-barres"]?.toLowerCase().includes(searchText)
+            item.id?.toLowerCase().includes(searchText) ||
+            item.emplacement?.toLowerCase().includes(searchText)
         );
     });
 
@@ -220,7 +183,7 @@ export default function Dossiers() {
                         <Col>
                             <InputGroup className="search-input-group">
                                 <Form.Control
-                                    placeholder="Rechercher dossiers"
+                                    placeholder="Rechercher emplacements"
                                     value={filterText}
                                     onChange={(e) => setFilterText(e.target.value)}
                                 />
@@ -230,7 +193,7 @@ export default function Dossiers() {
                         <Col className="d-flex justify-content-end gap-2">
                             <Button
                                 className="action-button"
-                                onClick={() => dispatch({ type: 'TOGGLE_FOLDER_FORM', payload: true })}
+                                onClick={() => dispatch({ type: 'TOGGLE_FORM', payload: true })}
                                 disabled={state.isProcessingFile}
                             >
                                 <FaPlus /> Ajouter
@@ -277,35 +240,21 @@ export default function Dossiers() {
                     onSelect={(eventKey) => dispatch({ type: 'SET_ACTIVE_TAB', payload: eventKey })}
                 >
                     <Nav.Item><Nav.Link eventKey="Active">Active</Nav.Link></Nav.Item>
-                    <Nav.Item><Nav.Link eventKey="Inactive">Inactive</Nav.Link></Nav.Item>
-                    <Nav.Item><Nav.Link eventKey="Déstockage">Déstockage</Nav.Link></Nav.Item>
-                    <Dropdown as={Nav.Item}>
-                        <Dropdown.Toggle as={Nav.Link}>Filtrer</Dropdown.Toggle>
-                        <Dropdown.Menu className="dropdown-menu-filter">
-                            {necessaryFields.map((field) => (
-                                <Dropdown.Item key={field} onClick={() => toggleColumn(field)}>
-                                    {hiddenColumns.includes(field) ? `Afficher ${field}` : `Masquer ${field}`}
-                                </Dropdown.Item>
-                            ))}
-                        </Dropdown.Menu>
-                    </Dropdown>
                 </Nav>
                 <div className="tab-content mt-3">
-                    {state.activeTab === 'Active' && <DisplayDossiersData data={filteredData} hiddenColumns={hiddenColumns} />}
-                    {state.activeTab === 'Inactive' && <div>Inactive Content</div>}
-                    {state.activeTab === 'Déstockage' && <div>Déstockage Content</div>}
+                    <DisplayEmplacementsData data={filteredData} />
                 </div>
             </div>
 
-            <FolderForm
-                show={state.showFolderForm}
-                onHide={() => dispatch({ type: 'TOGGLE_FOLDER_FORM', payload: false })}
-                isFromProductForm={false}
+            <EmplacementForm
+                show={state.showForm}
+                onHide={() => dispatch({ type: 'TOGGLE_FORM', payload: false })}
+                onSave={addNewEmplacement}
             />
 
             <ValidationModal
                 show={state.showModal}
-                onHide={handleCancelImport}
+                onHide={() => dispatch({ type: 'TOGGLE_MODAL', payload: false })}
                 validationSummary={state.validationSummary}
                 necessaryFields={necessaryFields}
                 optionalFields={optionalFields}

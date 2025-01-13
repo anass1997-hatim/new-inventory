@@ -1,0 +1,124 @@
+.association-dossiers-modal {
+    width: 37% !important;
+    padding: 1rem;
+    background-color: var(--secondary-color);
+    box-shadow: rgba(0, 0, 0, 0.1) 0 1px 4px;
+    transition: width var(--transition-speed);
+}
+
+.association-dossiers-header {
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    color: #105494;
+}
+
+.association-dossiers-header-title {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.association-dossiers-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.association-dossiers-sections {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.association-dossiers-section {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 0.5rem;
+    padding: 0.8rem;
+}
+
+.association-dossiers-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+}
+
+.association-dossiers-section-title {
+    font-size: 0.9rem;
+    color: #105494;
+    font-weight: 600;
+}
+
+.association-dossiers-search {
+    max-width: 40%;
+    font-size: 0.7rem;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 0.35rem;
+    height: auto;
+}
+
+.association-dossiers-scrollable {
+    max-height: 150px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.category-checkbox,
+.subcategory-checkbox,
+.product-checkbox {
+    font-size: 0.8rem;
+    color: #333;
+}
+
+.association-dossiers-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.8rem;
+}
+
+.association-dossiers-buttons {
+    display: flex;
+    gap: 0.8rem;
+}
+
+.association-dossiers-btn-secondary {
+    background-color: #ddd;
+    color: #333;
+    border: none;
+    padding: 0.4rem 2rem;
+    font-size: 0.75rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color var(--transition-speed);
+}
+
+.association-dossiers-btn-secondary:hover {
+    background-color: #bbb;
+}
+
+.association-dossiers-btn-primary {
+    background-color: #105494;
+    color: #fff;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color var(--transition-speed);
+}
+
+.association-dossiers-btn-primary:hover {
+    background-color: #083a69;
+}
+
+.association-dossiers-search:focus {
+    outline: none;
+    border-color: #105494;
+    box-shadow: none;
+}

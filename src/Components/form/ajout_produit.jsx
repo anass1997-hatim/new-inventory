@@ -1,6 +1,6 @@
 import { useReducer } from "react";
 import { Offcanvas, Form, Button, Row, Col, InputGroup } from "react-bootstrap";
-import { FaPlus, FaTrash } from "react-icons/fa";
+import {FaBoxOpen, FaPlus,  FaTrash} from "react-icons/fa";
 import "../../CSS/ajout_produit.css";
 
 const predefinedFields = [
@@ -128,7 +128,9 @@ export default function ProductForm({ show, onHide ,  onSwitchToFolderForm    })
     return (
         <Offcanvas show={show} onHide={onHide} placement="end" className="offcanvas-folder">
             <Offcanvas.Header closeButton>
-                <Offcanvas.Title>Ajouter un produit</Offcanvas.Title>
+                <Offcanvas.Title className="h4 d-flex align-items-center">
+                    <FaBoxOpen style={{ marginRight: "10px" }}/>
+                    Ajouter un produit</Offcanvas.Title>
             </Offcanvas.Header>
             <Offcanvas.Body>
                 <Form onSubmit={handleSubmit} noValidate>
