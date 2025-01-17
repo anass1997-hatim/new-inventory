@@ -1,9 +1,28 @@
-import { useReducer } from "react";
-import { Offcanvas, Form, Button, Row, Col, InputGroup } from "react-bootstrap";
-import {FaFolderPlus, FaPlus, FaTrash} from "react-icons/fa";
-import '../../CSS/ajout_produit.css'
+import { useReducer, useEffect } from "react";
+import { Offcanvas, Form, Button, Row, Col, InputGroup, Alert } from "react-bootstrap";
+import { FaFolderPlus, FaPlus, FaTrash } from "react-icons/fa";
+import '../../CSS/ajout_produit.css';
+
+const API_BASE_URL = "http://127.0.0.1:8000/api";
 
 const predefinedPermissions = ["Lecture", "Suppression", "Modification"];
+const customFieldOptions = [
+    { id: "etatProduit", label: "État du produit", type: "select", options: [
+            { value: "Neuf", label: "Neuf" },
+            { value: "Occasion", label: "Occasion" },
+            { value: "Endommagé", label: "Endommagé" }
+        ]},
+    { id: "garantie", label: "Garantie", type: "text" },
+    { id: "fournisseur", label: "Fournisseur", type: "text" },
+    { id: "codeFournisseur", label: "Code fournisseur", type: "text" },
+    { id: "statutDisponibilite", label: "Statut de disponibilité", type: "select", options: [
+            { value: "Disponible", label: "Disponible" },
+            { value: "Réservé", label: "Réservé" },
+            { value: "Vendu", label: "Vendu" }
+        ]},
+    { id: "dateAchat", label: "Date d'achat", type: "date" }
+];
+
 const initialState = {
     identifiant: "",
     codebarres: "",
@@ -11,11 +30,35 @@ const initialState = {
     description: "",
     permissions: [],
     customFields: [],
-    categories: ["Catégorie 1", "Catégorie 2"],
-    emplacements: ["Emplacement 1", "Emplacement 2"],
+    categories: [],
+    depots: [],
     newCategory: "",
-    newEmplacement: "",
+    newDepot: "",
     formErrors: {},
+    loading: true,
+    error: null,
+    isSubmitting: false
+};
+
+const apiService = {
+    async fetchData(endpoint) {
+        const response = await fetch(`${API_BASE_URL}/${endpoint}/`);
+        if (!response.ok) throw new Error(`Failed to fetch ${endpoint}`);
+        return await response.json();
+    },
+
+    async saveData(endpoint, data) {
+        const response = await fetch(`${API_BASE_URL}/${endpoint}/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `Failed to save ${endpoint}`);
+        }
+        return await response.json();
+    }
 };
 
 const reducer = (state, action) => {
@@ -29,29 +72,34 @@ const reducer = (state, action) => {
                     [action.field]: action.error || undefined,
                 },
             };
+        case "SET_FORM_ERRORS":
+            return { ...state, formErrors: action.errors };
+        case "SET_CATEGORIES":
+            return { ...state, categories: action.categories, loading: false };
+        case "SET_DEPOTS":
+            return { ...state, depots: action.depots, loading: false };
+        case "SET_ERROR":
+            return { ...state, error: action.error, loading: false };
+        case "SET_LOADING":
+            return { ...state, loading: action.loading };
+        case "SET_SUBMITTING":
+            return { ...state, isSubmitting: action.isSubmitting };
         case "ADD_CATEGORY":
-            if (!state.newCategory.trim()) return state;
             return {
                 ...state,
-                categories: [...state.categories, state.newCategory.trim()],
+                categories: [...state.categories, action.category],
                 newCategory: "",
             };
-        case "ADD_EMPLACEMENT":
-            if (!state.newEmplacement.trim()) return state;
+        case "ADD_DEPOT":
             return {
                 ...state,
-                emplacements: [...state.emplacements, state.newEmplacement.trim()],
-                newEmplacement: "",
-            };
-        case "SET_FORM_ERRORS":
-            return {
-                ...state,
-                formErrors: action.errors,
+                depots: [...state.depots, action.depot],
+                newDepot: "",
             };
         case "ADD_CUSTOM_FIELD":
             return {
                 ...state,
-                customFields: [...state.customFields, { name: "", value: "" }],
+                customFields: [...state.customFields, { fieldId: action.fieldId, value: "" }],
             };
         case "DELETE_CUSTOM_FIELD":
             return {
@@ -60,10 +108,15 @@ const reducer = (state, action) => {
             };
         case "UPDATE_CUSTOM_FIELD":
             const updatedFields = [...state.customFields];
-            updatedFields[action.index][action.key] = action.value;
+            updatedFields[action.index].value = action.value;
             return { ...state, customFields: updatedFields };
         case "RESET_FORM":
-            return initialState;
+            return {
+                ...initialState,
+                categories: state.categories,
+                depots: state.depots,
+                loading: false
+            };
         default:
             return state;
     }
@@ -72,26 +125,66 @@ const reducer = (state, action) => {
 export default function FolderForm({ show, onHide, onSwitchToProductForm, isFromProductForm }) {
     const [state, dispatch] = useReducer(reducer, initialState);
 
+    useEffect(() => {
+        const fetchInitialData = async () => {
+            dispatch({ type: "SET_LOADING", loading: true });
+            try {
+                const [categories, depots] = await Promise.all([
+                    apiService.fetchData("categories"),
+                    apiService.fetchData("depots"),
+                ]);
+
+                dispatch({ type: "SET_CATEGORIES", categories });
+                dispatch({ type: "SET_DEPOTS", depots });
+            } catch (error) {
+                dispatch({ type: "SET_ERROR", error: error.message });
+            } finally {
+                dispatch({ type: "SET_LOADING", loading: false });
+            }
+        };
+
+        fetchInitialData();
+    }, []);
+
     const validateForm = () => {
         const errors = {};
         if (!state.identifiant.trim()) errors.identifiant = "L'identifiant est requis.";
         if (!state.codebarres.trim()) errors.codebarres = "Le code-barres est requis.";
         if (!state.permissions.length) errors.permissions = "Au moins une permission est requise.";
-        if (!state.titre?.trim()) errors.titre = "Le titre est requis.";
-        if (!state.quantite?.toString().trim()) errors.quantite = "La quantité est requise.";
-        if (!state.prix?.toString().trim()) errors.prix = "Le prix est requis.";
-        if (!state.quantiteDisponible?.toString().trim()) errors.quantiteDisponible = "La quantité disponible est requise.";
+        if (!state.nomDossier?.trim()) errors.nomDossier = "Le nom du dossier est requis.";
         return errors;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const errors = validateForm();
         dispatch({ type: "SET_FORM_ERRORS", errors });
 
         if (Object.keys(errors).length === 0) {
-            dispatch({ type: "RESET_FORM" });
-            onHide();
+            dispatch({ type: "SET_SUBMITTING", isSubmitting: true });
+
+            try {
+                const formData = {
+                    identifiant: state.identifiant,
+                    codebarres: state.codebarres,
+                    nomDossier: state.nomDossier,
+                    description: state.description,
+                    permissions: state.permissions,
+                    customFields: state.customFields,
+                    category: state.categories.find(cat => cat.idCategorie === parseInt(state.category)),
+                    depot: state.depots.find(dep => dep.idDepot === parseInt(state.depot)),
+                };
+
+                await apiService.saveData("dossiers", formData);
+
+                dispatch({ type: "RESET_FORM" });
+                onHide();
+            } catch (error) {
+                console.error("Submission error:", error);
+                dispatch({ type: "SET_ERROR", error: error.message });
+            } finally {
+                dispatch({ type: "SET_SUBMITTING", isSubmitting: false });
+            }
         }
     };
 
@@ -124,6 +217,44 @@ export default function FolderForm({ show, onHide, onSwitchToProductForm, isFrom
         handleFieldChange("permissions", currentPermissions);
     };
 
+    const handleAddCategory = async () => {
+        if (!state.newCategory.trim()) return;
+
+        try {
+            const newCategory = await apiService.saveData("categories", {
+                categorie: state.newCategory.trim()
+            });
+            if (!state.categories.some(cat => cat.idCategorie === newCategory.idCategorie)) {
+                dispatch({ type: "SET_CATEGORIES", categories: [...state.categories, newCategory] });
+            }
+            handleFieldChange("category", newCategory.idCategorie.toString());
+            dispatch({ type: "SET_FIELD", field: "newCategory", value: "" });
+        } catch (error) {
+            dispatch({ type: "SET_ERROR", error: error.message });
+        }
+    };
+
+    const handleAddDepot = async () => {
+        if (!state.newDepot.trim()) return;
+
+        try {
+            const newDepot = await apiService.saveData("depots", {
+                depot: state.newDepot.trim()
+            });
+            if (!state.depots.some(dep => dep.idDepot === newDepot.idDepot)) {
+                dispatch({ type: "SET_DEPOTS", depots: [...state.depots, newDepot] });
+            }
+            handleFieldChange("depot", newDepot.idDepot.toString());
+            dispatch({ type: "SET_FIELD", field: "newDepot", value: "" });
+        } catch (error) {
+            dispatch({ type: "SET_ERROR", error: error.message });
+        }
+    };
+
+    if (state.loading) {
+        return <p>Chargement...</p>;
+    }
+
     return (
         <Offcanvas show={show} onHide={onHide} placement="end" className="offcanvas-folder">
             <Offcanvas.Header closeButton>
@@ -141,74 +272,74 @@ export default function FolderForm({ show, onHide, onSwitchToProductForm, isFrom
                         <FaFolderPlus style={{ marginRight: "10px" }} />
                         Ajouter un Dossier
                     </Offcanvas.Title>
-
                 </div>
             </Offcanvas.Header>
             <Offcanvas.Body>
+                {state.error && (
+                    <Alert variant="danger" dismissible onClose={() => dispatch({ type: "SET_ERROR", error: null })}>
+                        {state.error}
+                    </Alert>
+                )}
                 <Form onSubmit={handleSubmit} noValidate>
                     <Row className="g-3">
                         <Col md={6}>
                             <Form.Group className="mb-3">
-                                <Form.Label>Titre *</Form.Label>
+                                <Form.Label>Refrence *</Form.Label>
                                 <Form.Control
                                     type="text"
-                                    placeholder="Entrer le titre"
-                                    value={state.titre}
-                                    onChange={(e) => handleFieldChange("titre", e.target.value)}
-                                    isInvalid={!!state.formErrors.titre}
+                                    placeholder="Entrer la reférence"
+                                    value={state.reference}
+                                    onChange={(e) => handleFieldChange("reference", e.target.value)}
+                                    isInvalid={!!state.formErrors.reference}
                                 />
                                 <Form.Control.Feedback type="invalid">
-                                    {state.formErrors.titre}
+                                    {state.formErrors.identifiant}
                                 </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
                         <Col md={6}>
                             <Form.Group className="mb-3">
-                                <Form.Label>Quantité *</Form.Label>
+                                <Form.Label>Code Barres *</Form.Label>
                                 <Form.Control
-                                    type="number"
-                                    placeholder="Entrer la quantité"
-                                    value={state.quantite}
-                                    onChange={(e) => handleFieldChange("quantite", e.target.value)}
-                                    isInvalid={!!state.formErrors.quantite}
+                                    type="text"
+                                    placeholder="Entrer le Code Barres"
+                                    value={state.codebarres}
+                                    onChange={(e) => handleFieldChange("codebarres", e.target.value)}
+                                    isInvalid={!!state.formErrors.codebarres}
                                 />
                                 <Form.Control.Feedback type="invalid">
-                                    {state.formErrors.quantite}
+                                    {state.formErrors.codebarres}
                                 </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
                         <Col md={12}>
                             <Form.Group className="mb-3">
-                                <Form.Label>Prix *</Form.Label>
+                                <Form.Label>Nom du Dossier *</Form.Label>
                                 <Form.Control
-                                    type="number"
-                                    step="0.01"
-                                    placeholder="Entrer le prix"
-                                    value={state.prix}
-                                    onChange={(e) => handleFieldChange("prix", e.target.value)}
-                                    isInvalid={!!state.formErrors.prix}
+                                    type="text"
+                                    placeholder="Entrer le nom du dossier"
+                                    value={state.nomDossier}
+                                    onChange={(e) => handleFieldChange("nomDossier", e.target.value)}
+                                    isInvalid={!!state.formErrors.nomDossier}
                                 />
                                 <Form.Control.Feedback type="invalid">
-                                    {state.formErrors.prix}
+                                    {state.formErrors.nomDossier}
                                 </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
                         <Col md={12}>
                             <Form.Group className="mb-3">
-                                <Form.Label>Quantité Disponible *</Form.Label>
+                                <Form.Label>Description *</Form.Label>
                                 <Form.Control
-                                    type="number"
-                                    placeholder="Entrer la quantité disponible"
-                                    value={state.quantiteDisponible}
-                                    onChange={(e) => handleFieldChange("quantiteDisponible", e.target.value)}
-                                    isInvalid={!!state.formErrors.quantiteDisponible}
+                                    style={{resize : 'none'}}
+                                    as="textarea"
+                                    rows={3}
+                                    placeholder="Entrer la description"
+                                    value={state.description}
+                                    onChange={(e) => handleFieldChange("description", e.target.value)}
                                 />
-                                <Form.Control.Feedback type="invalid">
-                                    {state.formErrors.quantiteDisponible}
-                                </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
-
                         <Col md={12}>
                             <Form.Group className="mb-3">
                                 <Form.Label>Catégorie *</Form.Label>
@@ -219,58 +350,64 @@ export default function FolderForm({ show, onHide, onSwitchToProductForm, isFrom
                                         isInvalid={!!state.formErrors.category}
                                     >
                                         <option value="">Sélectionner une catégorie</option>
-                                        {state.categories.map((category, index) => (
-                                            <option key={index} value={category}>
-                                                {category}
+                                        {state.categories.map((category) => (
+                                            <option key={category.idCategorie} value={category.idCategorie}>
+                                                {category.categorie}
                                             </option>
                                         ))}
                                     </Form.Select>
                                     <Form.Control
                                         placeholder="Nouvelle catégorie"
                                         value={state.newCategory}
-                                        onChange={(e) => dispatch({ type: "SET_FIELD", field: "newCategory", value: e.target.value })}
+                                        onChange={(e) => handleFieldChange("newCategory", e.target.value)}
                                     />
-                                    <Button variant="outline-primary" onClick={() => dispatch({ type: "ADD_CATEGORY" })}>
+                                    <Button
+                                        variant="outline-primary"
+                                        onClick={handleAddCategory}
+                                        disabled={!state.newCategory.trim()}
+                                    >
                                         <FaPlus />
                                     </Button>
-                                    <Form.Control.Feedback type="invalid">
-                                        {state.formErrors.category}
-                                    </Form.Control.Feedback>
                                 </InputGroup>
+                                <Form.Control.Feedback type="invalid">
+                                    {state.formErrors.category}
+                                </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
-
                         <Col md={12}>
                             <Form.Group className="mb-3">
-                                <Form.Label>Emplacement *</Form.Label>
+                                <Form.Label>Dépôt *</Form.Label>
                                 <InputGroup>
                                     <Form.Select
-                                        value={state.emplacement}
-                                        onChange={(e) => handleFieldChange("emplacement", e.target.value)}
-                                        isInvalid={!!state.formErrors.emplacement}
+                                        value={state.depot}
+                                        onChange={(e) => handleFieldChange("depot", e.target.value)}
+                                        isInvalid={!!state.formErrors.depot}
                                     >
-                                        <option value="">Sélectionner un emplacement</option>
-                                        {state.emplacements.map((emplacement, index) => (
-                                            <option key={index} value={emplacement}>
-                                                {emplacement}
+                                        <option value="">Sélectionner un dépôt</option>
+                                        {state.depots.map((depot) => (
+                                            <option key={depot.idDepot} value={depot.idDepot}>
+                                                {depot.depot}
                                             </option>
                                         ))}
                                     </Form.Select>
                                     <Form.Control
-                                        placeholder="Nouvel emplacement"
-                                        value={state.newEmplacement}
-                                        onChange={(e) => dispatch({ type: "SET_FIELD", field: "newEmplacement", value: e.target.value })}
+                                        placeholder="Nouveau dépôt"
+                                        value={state.newDepot}
+                                        onChange={(e) => handleFieldChange("newDepot", e.target.value)}
                                     />
-                                    <Button variant="outline-primary" onClick={() => dispatch({ type: "ADD_EMPLACEMENT" })}>
+                                    <Button
+                                        variant="outline-primary"
+                                        onClick={handleAddDepot}
+                                        disabled={!state.newDepot.trim()}
+                                    >
                                         <FaPlus />
                                     </Button>
-                                    <Form.Control.Feedback type="invalid">
-                                        {state.formErrors.emplacement}
-                                    </Form.Control.Feedback>
                                 </InputGroup>
+                                <Form.Control.Feedback type="invalid">
+                                    {state.formErrors.depot}
+                                </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
-
                         <Col md={12}>
                             <Form.Group className="mb-3">
                                 <Form.Label>Permissions *</Form.Label>
@@ -299,72 +436,97 @@ export default function FolderForm({ show, onHide, onSwitchToProductForm, isFrom
 
                     <div className="custom-fields mt-4">
                         <h5>Champs personnalisés</h5>
-                        {state.customFields.length === 0 && (
-                            <div className="text-muted">Aucun champ personnalisé ajouté.</div>
-                        )}
-                        {state.customFields.map((field, index) => (
-                            <Row key={index} className="g-3 align-items-center mb-2">
-                                <Col md={5}>
-                                    <Form.Control
-                                        type="text"
-                                        placeholder="Nom du champ"
-                                        value={field.name}
-                                        onChange={(e) =>
-                                            dispatch({
-                                                type: "UPDATE_CUSTOM_FIELD",
-                                                index,
-                                                key: "name",
-                                                value: e.target.value,
-                                            })
-                                        }
-                                    />
-                                </Col>
-                                <Col md={5}>
-                                    <Form.Control
-                                        type="text"
-                                        placeholder="Valeur"
-                                        value={field.value}
-                                        onChange={(e) =>
-                                            dispatch({
-                                                type: "UPDATE_CUSTOM_FIELD",
-                                                index,
-                                                key: "value",
-                                                value: e.target.value,
-                                            })
-                                        }
-                                    />
-                                </Col>
-                                <Col md={2}>
-                                    <Button
-                                        variant="danger"
-                                        onClick={() =>
-                                            dispatch({ type: "DELETE_CUSTOM_FIELD", index })
-                                        }
-                                        style={{
-                                            width: "30px",
-                                            height: "30px",
-                                            padding: "0",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                        }}
-                                    >
-                                        <FaTrash />
-                                    </Button>
-                                </Col>
-                            </Row>
-                        ))}
+                        {state.customFields.map((field, index) => {
+                            const fieldConfig = customFieldOptions.find(opt => opt.id === field.fieldId);
+                            return (
+                                <Row key={index} className="g-3 align-items-center mb-2">
+                                    <Col md={5}>
+                                        <Form.Select
+                                            value={field.fieldId}
+                                            onChange={(e) => {
+                                                const updatedFields = [...state.customFields];
+                                                updatedFields[index] = { fieldId: e.target.value, value: "" };
+                                                dispatch({ type: "SET_FIELD", field: "customFields", value: updatedFields });
+                                            }}
+                                        >
+                                            <option value="">Sélectionner un champ</option>
+                                            {customFieldOptions.map(option => (
+                                                <option key={option.id} value={option.id}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </Form.Select>
+                                    </Col>
+                                    <Col md={5}>
+                                        {fieldConfig?.type === "select" ? (
+                                            <Form.Select
+                                                value={field.value}
+                                                onChange={(e) => dispatch({
+                                                    type: "UPDATE_CUSTOM_FIELD",
+                                                    index,
+                                                    value: e.target.value,
+                                                })}
+                                            >
+                                                <option value="">Sélectionner une valeur</option>
+                                                {fieldConfig.options.map(opt => (
+                                                    <option key={opt.value} value={opt.value}>
+                                                        {opt.label}
+                                                    </option>
+                                                ))}
+                                            </Form.Select>
+                                        ) : fieldConfig?.type === "date" ? (
+                                            <Form.Control
+                                                type="date"
+                                                value={field.value}
+                                                onChange={(e) => dispatch({
+                                                    type: "UPDATE_CUSTOM_FIELD",
+                                                    index,
+                                                    value: e.target.value,
+                                                })}
+                                            />
+                                        ) : (
+                                            <Form.Control
+                                                type="text"
+                                                placeholder="Valeur"
+                                                value={field.value}
+                                                onChange={(e) => dispatch({
+                                                    type: "UPDATE_CUSTOM_FIELD",
+                                                    index,
+                                                    value: e.target.value,
+                                                })}
+                                            />
+                                        )}
+                                    </Col>
+                                    <Col md={2}>
+                                        <Button
+                                            variant="danger"
+                                            onClick={() => dispatch({ type: "DELETE_CUSTOM_FIELD", index })}
+                                            style={{
+                                                width: "30px",
+                                                height: "30px",
+                                                padding: "0",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                            }}
+                                        >
+                                            <FaTrash />
+                                        </Button>
+                                    </Col>
+                                </Row>
+                            );
+                        })}
                         <Button
                             variant="outline-primary"
                             className="mt-2"
-                            onClick={() => dispatch({ type: "ADD_CUSTOM_FIELD" })}
+                            onClick={() => dispatch({ type: "ADD_CUSTOM_FIELD", fieldId: "" })}
                         >
                             <FaPlus /> Ajouter un champ
                         </Button>
                     </div>
 
-                    <Button type="submit" className="mt-4 w-100">
-                        Enregistrer
+                    <Button type="submit" className="mt-4 w-100" disabled={state.isSubmitting}>
+                        {state.isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
                     </Button>
                 </Form>
             </Offcanvas.Body>
