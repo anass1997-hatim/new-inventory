@@ -17,17 +17,19 @@
 }
 
 .products-container {
-    margin: 0;
-    padding: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem 2rem;
     width: 100%;
     background-color: var(--secondary-color);
     box-sizing: border-box;
     box-shadow: var(--shadow-color) 0 1px 4px;
 }
 
-.search-input-group {
+.products-container .search-input-group {
     max-width: 550px;
-    margin: 0 auto;
+    margin: 0;
 }
 
 .search-input-group .form-control {
@@ -52,7 +54,7 @@
 }
 
 .search-input-group .btn:hover {
-    background-color: var(--hover-bg-color);
+    background-color: var(--primary-color);
 }
 
 .products-tabs {

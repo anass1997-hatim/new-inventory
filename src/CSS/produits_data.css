@@ -17,7 +17,6 @@
 
 .table-container {
     margin: 1rem 0;
-    padding: var(--padding-large);
     background-color: var(--secondary-color);
     box-shadow: var(--shadow-color) 0 1px 4px;
     border-radius: var(--border-radius);
@@ -49,17 +48,30 @@ tbody tr {
     border-bottom: 1px solid var(--border-color);
 }
 
-
-
 tbody td {
     padding: var(--padding-medium);
-    color: var(--text-color);
+    vertical-align: middle;
+    word-break: break-word;
+    text-align: center;
+    max-width: 145px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.truncate-text {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
 }
 
+
 th .sort-icon {
-    font-size: 0.9rem ;
+    font-size: 0.9rem;
 }
-.product-icon ,.emplacement-icon {
+
+.product-icon, .emplacement-icon {
     color: var(--primary-color);
 }
 
@@ -101,14 +113,46 @@ tbody td img:hover {
     cursor: not-allowed;
 }
 
+.action-cell {
+    position: relative;
+    width: auto;
+    padding: 0 !important;
+    overflow: visible !important;
+}
+.action-buttons {
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 0.5rem;
+    background-color: white;
+    padding: 0.25rem;
+    border-radius: var(--border-radius);
+    z-index: 10;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+    white-space: nowrap;
+}
+
+
+.action-buttons:hover {
+    opacity: 1;
+}
+
+
 .edit-button-folder,
 .delete-button-folder,
-.associate-button-folder{
+.associate-button-folder {
     font-size: 1rem;
     background-color: var(--secondary-color);
     border: none;
     cursor: pointer;
     transition: color 0.2s ease;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .edit-button-folder {
@@ -117,7 +161,6 @@ tbody td img:hover {
 
 .associate-button-folder {
     color: #6c757d;
-
 }
 
 .edit-button-folder:hover {

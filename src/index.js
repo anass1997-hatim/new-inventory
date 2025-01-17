@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import {ProductProvider} from "./Components/context/ProductContext";
 
 const Layout = lazy(() => import("./Components/main"));
 const Index = lazy(() => import("./Components/body"));
@@ -30,6 +31,7 @@ const App = () => {
     return (
         <BrowserRouter>
             <Suspense fallback={null}>
+                <ProductProvider>
                 <Routes>
                     <Route path="*" element={<Layout />}>
                         <Route index element={<Index />} />
@@ -40,6 +42,7 @@ const App = () => {
                         <Route path="Inventaire" element={<Inventaire />} />
                     </Route>
                 </Routes>
+                </ProductProvider>
             </Suspense>
         </BrowserRouter>
     );

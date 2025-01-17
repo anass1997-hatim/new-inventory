@@ -70,7 +70,6 @@ export default function AjoutEmplacement({ show, onHide }) {
         dispatch({ type: "SET_FORM_ERRORS", errors });
 
         if (Object.keys(errors).length === 0) {
-            console.log("Form Data Submitted:", state);
             dispatch({ type: "RESET_FORM" });
             onHide();
         }

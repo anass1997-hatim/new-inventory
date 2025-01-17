@@ -233,7 +233,6 @@ export default function DisplayDossiersData({ data = [], hiddenColumns = [] }) {
                     dossierId={selectedDossier.Identifiant}
                     categories={sampleCategories}
                     onSave={(associations) => {
-                        console.log("Saved Associations:", associations);
                         setShowAssociationPanel(false);
                     }}
                     associatedData={{

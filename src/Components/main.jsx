@@ -27,6 +27,8 @@ import Inventaire from "./inventaire/inventaire";
 import Index from "./body";
 import Dossiers from "./body/dossiers";
 import Emplacement from "./body/emplacement";
+import AttributsTable from "./attributs/attributs";
+import {ProductProvider} from "./context/ProductContext";
 
 const sidebarItems = [
     { icon: FaHome, label: 'Accueil' , path: '/'},
@@ -125,6 +127,7 @@ export default function Layout() {
 
                 <div className={`content-area ${isMenuOpen ? 'sidebar-open' : ''}`}>
                     <div className="content-placeholder">
+                        <ProductProvider>
                         <Routes>
                             <Route path="/Produits" element={<Produits/>}/>
                             <Route path="/" element={<Index/>}/>
@@ -134,7 +137,9 @@ export default function Layout() {
                             <Route path="/Inventaire" element={<Inventaire />} />
                             <Route path="/Dossiers" element={<Dossiers />} />
                             <Route path="/Emplacements" element={<Emplacement />} />
+                            <Route path="/Attributs" element={<AttributsTable />} />
                         </Routes>
+                        </ProductProvider>
                     </div>
                 </div>
             </div>
