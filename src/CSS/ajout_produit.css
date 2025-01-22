@@ -9,9 +9,13 @@
     --transition-speed: 0.2s ease;
 }
 
-/* Offcanvas Folder */
+
+.custom-fields .col {
+    flex: 1;
+}
+
 .offcanvas-folder {
-    width: 40% !important;
+    width: 45% !important;
     padding: 1rem;
     background-color: var(--secondary-color);
     box-shadow: rgba(0, 0, 0, 0.1) 0 1px 4px;
@@ -31,7 +35,6 @@
     color: var(--primary-color);
 }
 
-/* Form Styling */
 .offcanvas-folder form {
     display: flex;
     flex-direction: column;
@@ -57,6 +60,10 @@
     border: 1px solid #ddd;
     border-radius: var(--border-radius);
     transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23ffffff' d='M2 0L0 2h4z'/%3E%3C/svg%3E") no-repeat right 0.75rem center/8px 10px;
 }
 
 .offcanvas-folder form .form-control:focus,
@@ -65,7 +72,6 @@
     box-shadow: 0 0 0 0.1rem rgba(16, 84, 148, 0.25);
 }
 
-/* File Input */
 .file-input-wrapper {
     display: flex;
     align-items: center;
@@ -89,7 +95,6 @@
     background-color: #083d73;
 }
 
-/* Buttons */
 .offcanvas-folder .btn-primary {
     background-color: var(--primary-color);
     color: var(--secondary-color);
@@ -120,7 +125,6 @@
     color: var(--secondary-color);
 }
 
-/* Custom Fields */
 .custom-fields h5 {
     font-size: var(--font-size-medium);
     font-weight: 600;
@@ -142,7 +146,6 @@
     font-size: var(--font-size-medium);
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     .offcanvas-folder {
         width: 100%;
@@ -160,7 +163,6 @@
     }
 }
 
-/* Table Styling */
 .dossiers-data-container table {
     width: 100%;
     border-collapse: collapse;
@@ -190,7 +192,6 @@
     background-color: #eaf4fc;
 }
 
-/* Pagination */
 .pagination-container {
     display: flex;
     justify-content: center;
@@ -219,7 +220,6 @@
     background-color: #083d73;
 }
 
-/* Icons and Buttons */
 .folder-icon {
     color: var(--primary-color);
     display: flex;
@@ -264,3 +264,5 @@
 .delete-button-folder:hover {
     color: #b02a37;
 }
+
+

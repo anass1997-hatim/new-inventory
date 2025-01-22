@@ -5,7 +5,7 @@ import { useProductContext } from "../context/ProductContext";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import DeleteConfirmationModal from "../modals/confirmation_delete_produit";
-import {ToastContainer} from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import ProductForm from "../form/ajout_produit";
 
 export default function DisplayProduitsData() {
@@ -20,6 +20,7 @@ export default function DisplayProduitsData() {
     const API_BASE_URL = "http://127.0.0.1:8000/api";
     const { refreshProducts } = useProductContext();
     const { products: data, loading, error } = useProductContext();
+
     const apiService = {
         async deleteProduct(reference) {
             try {
@@ -50,19 +51,38 @@ export default function DisplayProduitsData() {
         }
     };
 
-    const formatDate = (dateString) => {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('fr-FR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        }).replace(/\//g, '-');
-    };
-
     const getProduitCombined = (row) => {
         const categorieName = row.categorie?.categorie || "Non spécifiée";
         return `${row.reference} | ${row.codeBarres} | ${categorieName}`;
+    };
+
+    const getTypeUniteCombined = (row) => {
+        return `${row.type} | ${row.uniteType}`;
+    };
+
+    const getSousCategorieCouleur = (champs) => {
+        if (!champs) return "Non spécifié";
+        return `${champs.sousCategorie?.sousCategorie || "Non spécifiée"} | ${champs.couleur || "Non spécifiée"}`;
+    };
+
+    const getFamilleSousFamille = (champs) => {
+        if (!champs) return "Non spécifié";
+        return `${champs.famille?.famille || "Non spécifiée"} | ${champs.sousFamille?.sousFamille || "Non spécifiée"}`;
+    };
+
+    const getMarqueModele = (champs) => {
+        if (!champs) return "Non spécifié";
+        return `${champs.marque?.marque || "Non spécifiée"} | ${champs.model?.model || "Non spécifié"}`;
+    };
+
+    const getTailleDimensions = (champs) => {
+        if (!champs) return "Non spécifié";
+        return `${champs.taille || "Non spécifiée"} | ${champs.dimensions || "Non spécifiées"}`;
+    };
+
+    const getPoidsVolume = (champs) => {
+        if (!champs) return "Non spécifié";
+        return `${champs.poids || "Non spécifié"} | ${champs.volume || "Non spécifié"}`;
     };
 
     const handleSort = (key) => {
@@ -77,17 +97,30 @@ export default function DisplayProduitsData() {
         switch (key) {
             case "Produit":
                 return getProduitCombined(row);
-            case "depot":
-                return row.depot?.depot;
-            case "prixVenteTTC":
-            case "quantite":
-                return Number(row[key]);
-            case "dateAffectation":
-            case "datePeremption":
-                return new Date(row[key] || '');
+            case "TypeUnite":
+                return getTypeUniteCombined(row);
+            case "description":
+                return row.description;
+            case "SousCategorieCouleur":
+                return getSousCategorieCouleur(row.champsPersonnalises);
+            case "FamilleSousFamille":
+                return getFamilleSousFamille(row.champsPersonnalises);
+            case "MarqueModele":
+                return getMarqueModele(row.champsPersonnalises);
+            case "TailleDimensions":
+                return getTailleDimensions(row.champsPersonnalises);
+            case "PoidsVolume":
+                return getPoidsVolume(row.champsPersonnalises);
             default:
                 return row[key];
         }
+    };
+
+    const shouldHideColumn = (columnKey) => {
+        return data.every(row => {
+            const value = getValueForSort(row, columnKey);
+            return value === "Non spécifié" || value === "Non spécifiée";
+        });
     };
 
     const sortedData = [...data].sort((a, b) => {
@@ -153,7 +186,6 @@ export default function DisplayProduitsData() {
         }
     };
 
-
     const handleDeleteCancel = () => {
         setModalVisible(false);
         setSelectedProduct(null);
@@ -168,42 +200,52 @@ export default function DisplayProduitsData() {
                 <thead>
                 <tr>
                     <th></th>
-                    <th onClick={() => handleSort("Produit")}>
-                        Produit {renderSortIcon("Produit")}
-                    </th>
-                    <th onClick={() => handleSort("type")}>
-                        Type {renderSortIcon("type")}
-                    </th>
-                    <th onClick={() => handleSort("uniteType")}>
-                        Unité Type {renderSortIcon("uniteType")}
-                    </th>
-                    <th onClick={() => handleSort("prixVenteTTC")}>
-                        PrixVenteTTC {renderSortIcon("prixVenteTTC")}
-                    </th>
-                    <th onClick={() => handleSort("description")}>
-                        Description {renderSortIcon("description")}
-                    </th>
-                    <th onClick={() => handleSort("quantite")}>
-                        Quantité {renderSortIcon("quantite")}
-                    </th>
-                    <th onClick={() => handleSort("codeRFID")}>
-                        CodeRFID {renderSortIcon("codeRFID")}
-                    </th>
-                    <th onClick={() => handleSort("depot")}>
-                        Dépôt {renderSortIcon("depot")}
-                    </th>
-                    <th onClick={() => handleSort("dateAffectation")}>
-                        DateAffectation {renderSortIcon("dateAffectation")}
-                    </th>
-                    <th onClick={() => handleSort("datePeremption")}>
-                        DatePéremption {renderSortIcon("datePeremption")}
-                    </th>
+                    {!shouldHideColumn("Produit") && (
+                        <th onClick={() => handleSort("Produit")}>
+                            Produit {renderSortIcon("Produit")}
+                        </th>
+                    )}
+                    {!shouldHideColumn("TypeUnite") && (
+                        <th onClick={() => handleSort("TypeUnite")}>
+                            Type | Unité Type {renderSortIcon("TypeUnite")}
+                        </th>
+                    )}
+                    {!shouldHideColumn("description") && (
+                        <th onClick={() => handleSort("description")}>
+                            Description {renderSortIcon("description")}
+                        </th>
+                    )}
+                    {!shouldHideColumn("SousCategorieCouleur") && (
+                        <th onClick={() => handleSort("SousCategorieCouleur")}>
+                            Sous-Catégorie | Couleur {renderSortIcon("SousCategorieCouleur")}
+                        </th>
+                    )}
+                    {!shouldHideColumn("FamilleSousFamille") && (
+                        <th onClick={() => handleSort("FamilleSousFamille")}>
+                            Famille | Sous-Famille {renderSortIcon("FamilleSousFamille")}
+                        </th>
+                    )}
+                    {!shouldHideColumn("MarqueModele") && (
+                        <th onClick={() => handleSort("MarqueModele")}>
+                            Marque | Modèle {renderSortIcon("MarqueModele")}
+                        </th>
+                    )}
+                    {!shouldHideColumn("TailleDimensions") && (
+                        <th onClick={() => handleSort("TailleDimensions")}>
+                            Taille | Dimensions {renderSortIcon("TailleDimensions")}
+                        </th>
+                    )}
+                    {!shouldHideColumn("PoidsVolume") && (
+                        <th onClick={() => handleSort("PoidsVolume")}>
+                            Poids | Volume {renderSortIcon("PoidsVolume")}
+                        </th>
+                    )}
                 </tr>
                 </thead>
                 <tbody>
                 {paginatedData.length === 0 ? (
                     <tr>
-                        <td colSpan="13" className="text-center">
+                        <td colSpan="9" className="text-center">
                             Aucune donnée disponible à afficher.
                         </td>
                     </tr>
@@ -220,16 +262,14 @@ export default function DisplayProduitsData() {
                                     <FaBox />
                                 </div>
                             </td>
-                            <td>{getProduitCombined(row)}</td>
-                            <td>{row.type}</td>
-                            <td>{row.uniteType}</td>
-                            <td>{row.prixVenteTTC?.toFixed(2)}</td>
-                            <td  className="truncate-text">{row.description}</td>
-                            <td>{row.quantite}</td>
-                            <td>{row.codeRFID}</td>
-                            <td className="truncate-text">{row.depot?.depot || "Non spécifié"}</td>
-                            <td>{formatDate(row.dateAffectation)}</td>
-                            <td>{formatDate(row.datePeremption)}</td>
+                            {!shouldHideColumn("Produit") && <td>{getProduitCombined(row)}</td>}
+                            {!shouldHideColumn("TypeUnite") && <td>{getTypeUniteCombined(row)}</td>}
+                            {!shouldHideColumn("description") && <td>{row.description}</td>}
+                            {!shouldHideColumn("SousCategorieCouleur") && <td>{getSousCategorieCouleur(row.champsPersonnalises)}</td>}
+                            {!shouldHideColumn("FamilleSousFamille") && <td>{getFamilleSousFamille(row.champsPersonnalises)}</td>}
+                            {!shouldHideColumn("MarqueModele") && <td>{getMarqueModele(row.champsPersonnalises)}</td>}
+                            {!shouldHideColumn("TailleDimensions") && <td>{getTailleDimensions(row.champsPersonnalises)}</td>}
+                            {!shouldHideColumn("PoidsVolume") && <td>{getPoidsVolume(row.champsPersonnalises)}</td>}
                             <td className="action-cell">
                                 {hoveredRow === row.reference && (
                                     <div className="action-buttons">
@@ -289,8 +329,6 @@ export default function DisplayProduitsData() {
                 }}
                 productToEdit={productToEdit}
             />
-
         </div>
-
     );
 }

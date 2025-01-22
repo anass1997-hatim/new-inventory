@@ -33,21 +33,7 @@ const ValidationModal = ({
         setUploadStatus("Téléchargement en cours...");
         setSubmissionErrors([]);
 
-        const allowedTypes = ["Revente", "Immobilisation", "Equipement"];
-        const allowedUniteTypes = ["Pièce", "Douzaine"];
-
-        const typeErrors = new Set();
-        const uniteTypeErrors = new Set();
-
-        const filteredData = parsedData.map((row, index) => {
-            if (!allowedTypes.includes(row["Type"])) {
-                typeErrors.add(row["Type"]);
-            }
-
-            if (!allowedUniteTypes.includes(row["Unité Type"])) {
-                uniteTypeErrors.add(row["Unité Type"]);
-            }
-
+        const filteredData = parsedData.map((row) => {
             let champsPersonnalises = null;
             if (
                 row["Sous Catégorie"] ||
@@ -71,7 +57,7 @@ const ValidationModal = ({
                     couleur: row["Couleur"] || null,
                     poids: row["Poids"] || null,
                     volume: row["Volume"] || null,
-                    dimensions: row["Dimensions"] || null
+                    dimensions: row["Dimensions"] || null,
                 };
             }
 
@@ -84,40 +70,22 @@ const ValidationModal = ({
                 description: row["Description"],
                 categorie: {
                     idCategorie: row["Catégorie"],
-                    categorie: row["Catégorie"]
+                    categorie: row["Catégorie"],
                 },
                 depot: {
                     idDepot: row["Dépôt"],
-                    depot: row["Dépôt"]
+                    depot: row["Dépôt"],
                 },
                 dateAffectation: row["Date Affectation"],
                 datePeremption: row["Date Péremption"],
                 quantite: row["Quantité"],
                 codeRFID: row["Code RFID"],
-                champsPersonnalises: champsPersonnalises
+                champsPersonnalises: champsPersonnalises,
             };
         });
 
-        const errors = [];
-        if (typeErrors.size > 0) {
-            errors.push(
-                `Type invalide: ${Array.from(typeErrors).join(", ")}. Les valeurs autorisées sont: ${allowedTypes.join(", ")}.`
-            );
-        }
-        if (uniteTypeErrors.size > 0) {
-            errors.push(
-                `Unité Type invalide: ${Array.from(uniteTypeErrors).join(", ")}. Les valeurs autorisées sont: ${allowedUniteTypes.join(", ")}.`
-            );
-        }
-
-        if (errors.length > 0) {
-            setSubmissionErrors(errors);
-            setUploadStatus("Échec de la validation des données.");
-            return;
-        }
-
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/produits/upload/", {
+            const response = await fetch("http://127.0.0.1:8000/api/produits/bulk-upload/", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ products: filteredData }),
@@ -221,7 +189,6 @@ const ValidationModal = ({
                         ))}
                         </tbody>
                     </Table>
-
                 </div>
 
                 <div className="pagination-controls d-flex justify-content-between align-items-center mt-3">
@@ -233,8 +200,8 @@ const ValidationModal = ({
                         Précédent
                     </Button>
                     <span>
-            Page {currentPage} sur {totalPages}
-          </span>
+                        Page {currentPage} sur {totalPages}
+                    </span>
                     <Button
                         variant="outline-primary"
                         onClick={() => goToPage(currentPage + 1)}

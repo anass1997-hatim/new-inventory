@@ -2,14 +2,22 @@ import { useReducer, useEffect } from "react";
 import { Offcanvas, Form, Button, Row, Col, InputGroup, Alert } from "react-bootstrap";
 import { FaBoxOpen, FaPlus, FaTrash } from "react-icons/fa";
 import { useProductContext } from "../context/ProductContext";
+import {MoonLoader} from "react-spinners";
 
 const API_BASE_URL = "http://127.0.0.1:8000/api";
 
 const predefinedFields = [
-    "Sous Categorie", "Marque", "Modèle", "Famille", "Sous Famille",
-    "Taille", "Couleur", "Poids", "Volume", "Dimensions"
+    "Sous Categorie",
+    "Marque",
+    "Modèle",
+    "Famille",
+    "Sous Famille",
+    "Taille",
+    "Couleur",
+    "Poids",
+    "Volume",
+    "Dimensions"
 ];
-
 
 const initialState = {
     reference: "",
@@ -19,29 +27,27 @@ const initialState = {
     uniteType: "",
     prixVenteTTC: "",
     category: "",
-    depot: "",
-    quantite: "",
-    codeRFID: "",
-    dateAffectation: "",
-    datePeremption: "",
     categories: [],
-    depots: [],
     newCategory: "",
-    newDepot: "",
     customFields: [],
     formErrors: {},
     loading: true,
     error: null,
-    isSubmitting: false
+    isSubmitting: false,
+    sousCategories: [],
+    familles: [],
+    sousFamilles: [],
+    marques: [],
+    modeles: [],
+    selectedValues: {}
 };
 
 const apiService = {
     async fetchData(endpoint) {
         const response = await fetch(`${API_BASE_URL}/${endpoint}/`);
-        if (!response.ok) throw new Error(`Failed to fetch ${endpoint}`);
+        if (!response.ok) throw new Error(`Impossible de récupérer: ${endpoint}`);
         return await response.json();
     },
-
     async saveData(endpoint, data) {
         const response = await fetch(`${API_BASE_URL}/${endpoint}/`, {
             method: "POST",
@@ -50,32 +56,21 @@ const apiService = {
         });
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.message || `Failed to save ${endpoint}`);
+            throw new Error(errorData.message || "Erreur lors de l'enregistrement");
         }
         return await response.json();
     },
-
     async saveProduct(data) {
-        try {
-            const response = await fetch(`${API_BASE_URL}/produits/`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data)
-            });
-
-            const responseData = await response.json();
-
-            if (!response.ok) {
-                throw new Error(responseData.message || "Failed to save product");
-            }
-
-            return responseData;
-        } catch (error) {
-            console.error('API Error:', error);
-            throw error;
+        const response = await fetch(`${API_BASE_URL}/produits/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+        const responseData = await response.json();
+        if (!response.ok) {
+            throw new Error(responseData.message || "Échec de l'enregistrement");
         }
+        return responseData;
     }
 };
 
@@ -90,12 +85,18 @@ const reducer = (state, action) => {
                     [action.field]: action.error
                 }
             };
+        case "SET_SELECTED_FIELD_VALUES":
+            return {
+                ...state,
+                selectedValues: {
+                    ...state.selectedValues,
+                    [action.field]: action.value
+                }
+            };
         case "SET_FORM_ERRORS":
             return { ...state, formErrors: action.errors };
         case "SET_CATEGORIES":
             return { ...state, categories: action.categories, loading: false };
-        case "SET_DEPOTS":
-            return { ...state, depots: action.depots, loading: false };
         case "SET_ERROR":
             return { ...state, error: action.error, loading: false };
         case "SET_LOADING":
@@ -108,12 +109,6 @@ const reducer = (state, action) => {
                 categories: [...state.categories, action.category],
                 newCategory: ""
             };
-        case "ADD_DEPOT":
-            return {
-                ...state,
-                depots: [...state.depots, action.depot],
-                newDepot: ""
-            };
         case "ADD_CUSTOM_FIELD":
             return {
                 ...state,
@@ -122,45 +117,143 @@ const reducer = (state, action) => {
         case "DELETE_CUSTOM_FIELD":
             return {
                 ...state,
-                customFields: state.customFields.filter((_, index) => index !== action.index)
+                customFields: state.customFields.filter((_, i) => i !== action.index)
             };
         case "UPDATE_CUSTOM_FIELD":
+            const newCustomFields = state.customFields.map((field, i) =>
+                i === action.index ? { ...field, [action.key]: action.value } : field
+            );
+
+            if (action.key === "value") {
+                const currentField = state.customFields[action.index];
+                if (currentField.name === "Famille") {
+                    newCustomFields.forEach((field, idx) => {
+                        if (field.name === "Sous Famille") {
+                            newCustomFields[idx] = { ...field, value: "" };
+                        }
+                    });
+                } else if (currentField.name === "Marque") {
+                    newCustomFields.forEach((field, idx) => {
+                        if (field.name === "Modèle") {
+                            newCustomFields[idx] = { ...field, value: "" };
+                        }
+                    });
+                }
+            }
+
             return {
                 ...state,
-                customFields: state.customFields.map((field, index) =>
-                    index === action.index
-                        ? { ...field, [action.key]: action.value }
-                        : field
-                )
+                customFields: newCustomFields
             };
+        case "SET_SOUS_CATEGORIES":
+            return { ...state, sousCategories: action.sousCategories };
+        case "SET_FAMILLES":
+            return { ...state, familles: action.familles };
+        case "SET_SOUS_FAMILLES":
+            return { ...state, sousFamilles: action.sousFamilles };
+        case "SET_MARQUES":
+            return { ...state, marques: action.marques };
+        case "SET_MODELES":
+            return { ...state, modeles: action.modeles };
         case "RESET_FORM":
-            return {
-                ...initialState,
-                categories: state.categories,
-                depots: state.depots,
-                loading: false
-            };
+            return { ...initialState, categories: state.categories, loading: false };
         default:
             return state;
     }
 };
 
-export default function ProductForm({ show, onHide , productToEdit  }) {
+export default function ProductForm({ show, onHide, productToEdit }) {
     const [state, dispatch] = useReducer(reducer, initialState);
     const { refreshProducts } = useProductContext();
 
+    const handleCategoryChange = async (value) => {
+        dispatch({ type: "SET_FIELD", field: "category", value });
+        dispatch({ type: "SET_SOUS_CATEGORIES", sousCategories: [] });
+        try {
+            const sousCategories = await apiService.fetchData(`categories/${parseInt(value)}/sous-categories`);
+            dispatch({ type: "SET_SOUS_CATEGORIES", sousCategories });
+        } catch (error) {
+            dispatch({ type: "SET_ERROR", error: error.message });
+        }
+    };
+
+    const handleCustomFieldChange = async (index, key, value) => {
+        dispatch({ type: "UPDATE_CUSTOM_FIELD", index, key, value });
+
+        if (key === "value") {
+            const field = state.customFields[index];
+
+            switch (field.name) {
+                case "Marque":
+                    try {
+                        const modeles = await apiService.fetchData(`marques/${value}/modeles`);
+                        dispatch({ type: "SET_MODELES", modeles });
+                    } catch (error) {
+                        dispatch({ type: "SET_ERROR", error: error.message });
+                    }
+                    break;
+
+                case "Famille":
+                    try {
+                        const sousFamilles = await apiService.fetchData(`familles/${value}/sous-familles`);
+                        dispatch({ type: "SET_SOUS_FAMILLES", sousFamilles });
+                    } catch (error) {
+                        dispatch({ type: "SET_ERROR", error: error.message });
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
+
+    useEffect(() => {
+        const loadDependentData = async () => {
+            if (productToEdit?.champsPersonnalises) {
+                const { sousCategorie, model, sousFamille } = productToEdit.champsPersonnalises;
+
+                if (sousCategorie) {
+                    const sousCategories = await apiService.fetchData(
+                        `categories/${sousCategorie.categorie}/sous-categories`
+                    );
+                    dispatch({ type: "SET_SOUS_CATEGORIES", sousCategories });
+                }
+
+                if (model) {
+                    const modeles = await apiService.fetchData(
+                        `marques/${model.marque.idMarque}/modeles`
+                    );
+                    dispatch({ type: "SET_MODELES", modeles });
+                }
+
+                if (sousFamille) {
+                    const sousFamilles = await apiService.fetchData(
+                        `familles/${sousFamille.famille.idFamille}/sous-familles`
+                    );
+                    dispatch({ type: "SET_SOUS_FAMILLES", sousFamilles });
+                }
+            }
+        };
+
+        if (productToEdit) {
+            loadDependentData();
+        }
+    }, [productToEdit]);
 
     useEffect(() => {
         const fetchInitialData = async () => {
             dispatch({ type: "SET_LOADING", loading: true });
             try {
-                const [categories, depots] = await Promise.all([
+                const [categories, familles, marques, sousFamilles] = await Promise.all([
                     apiService.fetchData("categories"),
-                    apiService.fetchData("depots"),
+                    apiService.fetchData("familles"),
+                    apiService.fetchData("marques"),
+                    apiService.fetchData("sous-familles")
                 ]);
-
                 dispatch({ type: "SET_CATEGORIES", categories });
-                dispatch({ type: "SET_DEPOTS", depots });
+                dispatch({ type: "SET_FAMILLES", familles });
+                dispatch({ type: "SET_MARQUES", marques });
+                dispatch({ type: "SET_SOUS_FAMILLES", sousFamilles });
 
                 if (productToEdit) {
                     const fields = {
@@ -170,41 +263,75 @@ export default function ProductForm({ show, onHide , productToEdit  }) {
                         description: productToEdit.description,
                         uniteType: productToEdit.uniteType,
                         prixVenteTTC: productToEdit.prixVenteTTC,
-                        category: productToEdit.categorie?.idCategorie || "",
-                        depot: productToEdit.depot?.idDepot || "",
-                        quantite: productToEdit.quantite,
-                        codeRFID: productToEdit.codeRFID,
-                        dateAffectation: productToEdit.dateAffectation || "",
-                        datePeremption: productToEdit.datePeremption || "",
+                        category: productToEdit.categorie?.idCategorie || ""
                     };
 
-                    // Initialize custom fields only for non-null values
                     if (productToEdit.champsPersonnalises) {
-                        const customFieldsMapping = {
-                            "Sous Categorie": "sousCategorie",
-                            "Marque": "marque",
-                            "Modèle": "model",
-                            "Famille": "famille",
-                            "Sous Famille": "sousFamille",
-                            "Taille": "taille",
-                            "Couleur": "couleur",
-                            "Poids": "poids",
-                            "Volume": "volume",
-                            "Dimensions": "dimensions"
-                        };
+                        const customFields = [];
+                        const selectedValues = {};
 
-                        const nonEmptyCustomFields = Object.entries(customFieldsMapping)
-                            .filter(([_, apiKey]) => productToEdit.champsPersonnalises[apiKey] !== null)
-                            .map(([displayName, apiKey]) => ({
-                                name: displayName,
-                                value: productToEdit.champsPersonnalises[apiKey]
-                            }));
+                        if (productToEdit.champsPersonnalises.sousCategorie) {
+                            customFields.push({
+                                name: "Sous Categorie",
+                                value: productToEdit.champsPersonnalises.sousCategorie.idSousCategorie.toString()
+                            });
+                            selectedValues[`parentCategorie-${customFields.length - 1}`] =
+                                productToEdit.champsPersonnalises.sousCategorie.categorie.toString();
+                        }
 
-                        fields.customFields = nonEmptyCustomFields;
+                        if (productToEdit.champsPersonnalises.marque) {
+                            customFields.push({
+                                name: "Marque",
+                                value: productToEdit.champsPersonnalises.marque.idMarque.toString()
+                            });
+                        }
+
+                        if (productToEdit.champsPersonnalises.model) {
+                            customFields.push({
+                                name: "Modèle",
+                                value: productToEdit.champsPersonnalises.model.idModel.toString()
+                            });
+                            selectedValues[`parentMarque-${customFields.length - 1}`] =
+                                productToEdit.champsPersonnalises.model.marque.idMarque.toString();
+                        }
+
+                        if (productToEdit.champsPersonnalises.famille) {
+                            customFields.push({
+                                name: "Famille",
+                                value: productToEdit.champsPersonnalises.famille.idFamille.toString()
+                            });
+                        }
+
+                        if (productToEdit.champsPersonnalises.sousFamille) {
+                            customFields.push({
+                                name: "Sous Famille",
+                                value: productToEdit.champsPersonnalises.sousFamille.idSousFamille.toString()
+                            });
+                            selectedValues[`parentFamille-${customFields.length - 1}`] =
+                                productToEdit.champsPersonnalises.sousFamille.famille.idFamille.toString();
+                        }
+
+                        ["taille", "couleur", "poids", "volume", "dimensions"].forEach(field => {
+                            if (productToEdit.champsPersonnalises[field]) {
+                                customFields.push({
+                                    name: field.charAt(0).toUpperCase() + field.slice(1),
+                                    value: productToEdit.champsPersonnalises[field]
+                                });
+                            }
+                        });
+
+                        fields.customFields = customFields;
+                        Object.entries(selectedValues).forEach(([key, value]) => {
+                            dispatch({
+                                type: "SET_SELECTED_FIELD_VALUES",
+                                field: key,
+                                value
+                            });
+                        });
                     }
 
-                    Object.keys(fields).forEach((key) =>
-                        dispatch({ type: "SET_FIELD", field: key, value: fields[key] })
+                    Object.entries(fields).forEach(([key, value]) =>
+                        dispatch({ type: "SET_FIELD", field: key, value })
                     );
                 }
             } catch (error) {
@@ -217,50 +344,53 @@ export default function ProductForm({ show, onHide , productToEdit  }) {
         fetchInitialData();
     }, [productToEdit]);
 
-
-
-
-
-
     const validateForm = () => {
         const errors = {};
-        const requiredFields = [
-            "reference", "type", "codeBarres", "description", "uniteType",
-            "prixVenteTTC", "quantite", "codeRFID"
-        ];
-
-        requiredFields.forEach(field => {
-            if (!state[field]?.toString().trim()) {
+        const requiredFields = ["reference", "type", "codeBarres", "description", "uniteType", "prixVenteTTC"];
+        requiredFields.forEach((field) => {
+            const val = state[field];
+            if (!val || !String(val).trim()) {
                 errors[field] = `Le champ ${field} est requis.`;
             }
         });
         if (!state.category) {
             errors.category = "La catégorie est requise.";
         }
-
-        if (!state.depot) {
-            errors.depot = "Le dépôt est requis.";
-        }
-
         return errors;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         const errors = validateForm();
         dispatch({ type: "SET_FORM_ERRORS", errors });
-
         if (Object.keys(errors).length === 0) {
             dispatch({ type: "SET_SUBMITTING", isSubmitting: true });
-
             try {
-                const selectedCategory = state.categories.find(
-                    (cat) => cat.idCategorie === parseInt(state.category)
-                );
-                const selectedDepot = state.depots.find(
-                    (dep) => dep.idDepot === parseInt(state.depot)
-                );
+                const customFields = state.customFields.reduce((acc, field) => {
+                    if (field.name && field.value) {
+                        const fieldMapping = {
+                            "Sous Categorie": "sousCategorie",
+                            "Marque": "marque",
+                            "Modèle": "model",
+                            "Famille": "famille",
+                            "Sous Famille": "sousFamille",
+                            "Taille": "taille",
+                            "Couleur": "couleur",
+                            "Poids": "poids",
+                            "Volume": "volume",
+                            "Dimensions": "dimensions"
+                        };
+                        const apiKey = fieldMapping[field.name];
+                        if (apiKey) {
+                            if (["sousCategorie", "marque", "model", "famille", "sousFamille"].includes(apiKey)) {
+                                acc[apiKey] = parseInt(field.value);
+                            } else {
+                                acc[apiKey] = field.value;
+                            }
+                        }
+                    }
+                    return acc;
+                }, {});
 
                 const formData = {
                     reference: state.reference,
@@ -269,38 +399,14 @@ export default function ProductForm({ show, onHide , productToEdit  }) {
                     description: state.description,
                     uniteType: state.uniteType,
                     prixVenteTTC: parseFloat(state.prixVenteTTC),
-                    categorie: selectedCategory ? {
-                        idCategorie: selectedCategory.idCategorie,
-                        categorie: selectedCategory.categorie
-                    } : null,
-                    depot: selectedDepot ? {
-                        idDepot: selectedDepot.idDepot,
-                        depot: selectedDepot.depot
-                    } : null,
-                    champsPersonnalises: state.customFields.length > 0 ? {
-                        sousCategorie: state.customFields.find(f => f.name === "Sous Categorie")?.value || null,
-                        marque: state.customFields.find(f => f.name === "Marque")?.value || null,
-                        model: state.customFields.find(f => f.name === "Modèle")?.value || null,
-                        famille: state.customFields.find(f => f.name === "Famille")?.value || null,
-                        sousFamille: state.customFields.find(f => f.name === "Sous Famille")?.value || null,
-                        taille: state.customFields.find(f => f.name === "Taille")?.value || null,
-                        couleur: state.customFields.find(f => f.name === "Couleur")?.value || null,
-                        poids: state.customFields.find(f => f.name === "Poids")?.value || null,
-                        volume: state.customFields.find(f => f.name === "Volume")?.value || null,
-                        dimensions: state.customFields.find(f => f.name === "Dimensions")?.value || null
-                    } : null,
-                    quantite: parseInt(state.quantite),
-                    codeRFID: state.codeRFID,
-                    dateAffectation: state.dateAffectation || null,
-                    datePeremption: state.datePeremption || null,
+                    categorie: parseInt(state.category),
+                    champsPersonnalises: customFields
                 };
 
                 if (productToEdit) {
                     await fetch(`${API_BASE_URL}/produits/${productToEdit.reference}/`, {
                         method: "PUT",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
+                        headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(formData)
                     });
                 } else {
@@ -310,9 +416,7 @@ export default function ProductForm({ show, onHide , productToEdit  }) {
                 dispatch({ type: "RESET_FORM" });
                 refreshProducts();
                 onHide();
-
             } catch (error) {
-                console.error("Submission error:", error);
                 dispatch({ type: "SET_ERROR", error: error.message });
             } finally {
                 dispatch({ type: "SET_SUBMITTING", isSubmitting: false });
@@ -320,25 +424,25 @@ export default function ProductForm({ show, onHide , productToEdit  }) {
         }
     };
 
-
     const handleFieldChange = (field, value) => {
+        const strValue = value !== undefined && value !== null ? String(value) : "";
         dispatch({
             type: "SET_FIELD",
             field,
             value,
-            error: !value.toString().trim() ? `Le champ ${field} est requis.` : undefined
+            error: !strValue.trim() ? `Le champ ${field} est requis.` : undefined
         });
     };
 
     const handleAddCategory = async () => {
         if (!state.newCategory.trim()) return;
-
         try {
             const newCategory = await apiService.saveData("categories", {
                 categorie: state.newCategory.trim()
             });
-            if (!state.categories.some(cat => cat.idCategorie === newCategory.idCategorie)) {
-                dispatch({ type: "SET_CATEGORIES",
+            if (!state.categories.some((cat) => cat.idCategorie === newCategory.idCategorie)) {
+                dispatch({
+                    type: "SET_CATEGORIES",
                     categories: [...state.categories, newCategory]
                 });
             }
@@ -349,44 +453,223 @@ export default function ProductForm({ show, onHide , productToEdit  }) {
         }
     };
 
-    const handleAddDepot = async () => {
-        if (!state.newDepot.trim()) return;
+    const renderCustomFieldInput = (field, index) => {
+        switch (field.name) {
+            case "Sous Categorie":
+                return (
+                    <Row>
+                        <Col>
+                            <Form.Select
+                                value={state.selectedValues[`parentCategorie-${index}`] || ""}
+                                onChange={async (e) => {
+                                    const value = e.target.value;
+                                    dispatch({
+                                        type: "SET_SELECTED_FIELD_VALUES",
+                                        field: `parentCategorie-${index}`,
+                                        value
+                                    });
+                                    dispatch({ type: "SET_FIELD", field: "category", value });
+                                    try {
+                                        const sousCategories = await apiService.fetchData(`categories/${value}/sous-categories`);
+                                        dispatch({ type: "SET_SOUS_CATEGORIES", sousCategories });
+                                    } catch (error) {
+                                        dispatch({ type: "SET_ERROR", error: error.message });
+                                    }
+                                }}
+                            >
+                                <option value="">Sélectionner une catégorie</option>
+                                {state.categories.map(category => (
+                                    <option key={category.idCategorie} value={category.idCategorie}>
+                                        {category.categorie}
+                                    </option>
+                                ))}
+                            </Form.Select>
+                        </Col>
+                        <Col>
+                            <Form.Select
+                                value={field.value}
+                                onChange={(e) => handleCustomFieldChange(index, "value", e.target.value)}
+                                disabled={!state.selectedValues[`parentCategorie-${index}`]}
+                            >
+                                <option value="">Sélectionner une sous-catégorie</option>
+                                {state.sousCategories.map(sousCategorie => (
+                                    <option key={sousCategorie.idSousCategorie} value={sousCategorie.idSousCategorie}>
+                                        {sousCategorie.sousCategorie}
+                                    </option>
+                                ))}
+                            </Form.Select>
+                        </Col>
+                    </Row>
+                );
 
-        try {
-            const newDepot = await apiService.saveData("depots", {
-                depot: state.newDepot.trim()
-            });
-            if (!state.depots.some(dep => dep.idDepot === newDepot.idDepot)) {
-                dispatch({ type: "SET_DEPOTS",
-                    depots: [...state.depots, newDepot]
-                });
-            }
-            handleFieldChange("depot", newDepot.idDepot.toString());
-            dispatch({ type: "SET_FIELD", field: "newDepot", value: "" });
-        } catch (error) {
-            dispatch({ type: "SET_ERROR", error: error.message });
+            case "Marque":
+                return (
+                    <Form.Select
+                        value={field.value}
+                        onChange={(e) => handleCustomFieldChange(index, "value", e.target.value)}
+                    >
+                        <option value="">Sélectionner une marque</option>
+                        {state.marques.map(marque => (
+                            <option key={marque.idMarque} value={marque.idMarque}>
+                                {marque.marque}
+                            </option>
+                        ))}
+                    </Form.Select>
+                );
+
+            case "Modèle":
+                return (
+                    <Row>
+                        <Col>
+                            <Form.Select
+                                value={state.selectedValues[`parentMarque-${index}`] || ""}
+                                onChange={async (e) => {
+                                    const value = e.target.value;
+                                    dispatch({
+                                        type: "SET_SELECTED_FIELD_VALUES",
+                                        field: `parentMarque-${index}`,
+                                        value
+                                    });
+                                    try {
+                                        const modeles = await apiService.fetchData(`marques/${value}/modeles`);
+                                        dispatch({ type: "SET_MODELES", modeles });
+                                    } catch (error) {
+                                        dispatch({ type: "SET_ERROR", error: error.message });
+                                    }
+                                }}
+                            >
+                                <option value="">Sélectionner une marque</option>
+                                {state.marques.map(marque => (
+                                    <option key={marque.idMarque} value={marque.idMarque}>
+                                        {marque.marque}
+                                    </option>
+                                ))}
+                            </Form.Select>
+                        </Col>
+                        <Col>
+                            <Form.Select
+                                value={field.value}
+                                onChange={(e) => handleCustomFieldChange(index, "value", e.target.value)}
+                                disabled={!state.selectedValues[`parentMarque-${index}`]}
+                            >
+                                <option value="">Sélectionner un modèle</option>
+                                {state.modeles.map(modele => (
+                                    <option key={modele.idModel} value={modele.idModel}>
+                                        {modele.model}
+                                    </option>
+                                ))}
+                            </Form.Select>
+                        </Col>
+                    </Row>
+                );
+
+            case "Famille":
+                return (
+                    <Form.Select
+                        value={field.value}
+                        onChange={(e) => handleCustomFieldChange(index, "value", e.target.value)}
+                    >
+                        <option value="">Sélectionner une famille</option>
+                        {state.familles.map(famille => (
+                            <option key={famille.idFamille} value={famille.idFamille}>
+                                {famille.famille}
+                            </option>
+                        ))}
+                    </Form.Select>
+                );
+
+            case "Sous Famille":
+                return (
+                    <Row>
+                        <Col>
+                            <Form.Select
+                                value={state.selectedValues[`parentFamille-${index}`] || ""}
+                                onChange={async (e) => {
+                                    const value = e.target.value;
+                                    dispatch({
+                                        type: "SET_SELECTED_FIELD_VALUES",
+                                        field: `parentFamille-${index}`,
+                                        value
+                                    });
+                                    try {
+                                        const sousFamilles = await apiService.fetchData(`familles/${value}/sous-familles`);
+                                        dispatch({ type: "SET_SOUS_FAMILLES", sousFamilles });
+                                    } catch (error) {
+                                        dispatch({ type: "SET_ERROR", error: error.message });
+                                    }
+                                }}
+                            >
+                                <option value="">Sélectionner une famille</option>
+                                {state.familles.map(famille => (
+                                    <option key={famille.idFamille} value={famille.idFamille}>
+                                        {famille.famille}
+                                    </option>
+                                ))}
+                            </Form.Select>
+                        </Col>
+                        <Col>
+                            <Form.Select
+                                value={field.value}
+                                onChange={(e) => handleCustomFieldChange(index, "value", e.target.value)}
+                                disabled={!state.selectedValues[`parentFamille-${index}`]}
+                            >
+                                <option value="">Sélectionner une sous-famille</option>
+                                {state.sousFamilles.map(sousFamille => (
+                                    <option key={sousFamille.idSousFamille} value={sousFamille.idSousFamille}>
+                                        {sousFamille.sousFamille}
+                                    </option>
+                                ))}
+                            </Form.Select>
+                        </Col>
+                    </Row>
+                );
+
+            default:
+                return (
+                    <Form.Control
+                        placeholder="Valeur"
+                        value={field.value}
+                        onChange={(e) => handleCustomFieldChange(index, "value", e.target.value)}
+                    />
+                );
         }
     };
-    if (state.loading) {
-        return <p>chargement...</p>;
-    }
 
+    if (state.loading) {
+        return <div style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+            width: "100vw",
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            zIndex: 1000,
+        }}>
+            <MoonLoader color="#105494" size={60}/>
+        </div>;
+    }
 
     return (
         <Offcanvas show={show} onHide={onHide} placement="end" className="offcanvas-folder">
             <Offcanvas.Header closeButton>
                 <Offcanvas.Title className="h4 d-flex align-items-center">
-                    <FaBoxOpen className="me-2" />
+                    <FaBoxOpen className="me-2"/>
                     {productToEdit ? "Modifier le produit" : "Ajouter un produit"}
                 </Offcanvas.Title>
             </Offcanvas.Header>
             <Offcanvas.Body>
                 {state.error && (
-                    <Alert variant="danger" dismissible onClose={() => dispatch({ type: "SET_ERROR", error: null })}>
+                    <Alert
+                        variant="danger"
+                        dismissible
+                        onClose={() => dispatch({ type: "SET_ERROR", error: null })}
+                    >
                         {state.error}
                     </Alert>
                 )}
-
                 <Form onSubmit={handleSubmit} noValidate>
                     <Row className="g-3">
                         <Col md={6}>
@@ -404,7 +687,6 @@ export default function ProductForm({ show, onHide , productToEdit  }) {
                                 </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
-
                         <Col md={6}>
                             <Form.Group>
                                 <Form.Label>Type *</Form.Label>
@@ -423,7 +705,6 @@ export default function ProductForm({ show, onHide , productToEdit  }) {
                                 </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
-
                         <Col md={6}>
                             <Form.Group>
                                 <Form.Label>Code Barres *</Form.Label>
@@ -438,10 +719,9 @@ export default function ProductForm({ show, onHide , productToEdit  }) {
                                 </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
-
                         <Col md={6}>
                             <Form.Group>
-                                <Form.Label>Unité Type *</Form.Label>
+                                <Form.Label>Type d'unité *</Form.Label>
                                 <Form.Select
                                     value={state.uniteType}
                                     onChange={(e) => handleFieldChange("uniteType", e.target.value)}
@@ -456,7 +736,6 @@ export default function ProductForm({ show, onHide , productToEdit  }) {
                                 </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
-
                         <Col md={6}>
                             <Form.Group>
                                 <Form.Label>Prix Vente TTC *</Form.Label>
@@ -473,7 +752,6 @@ export default function ProductForm({ show, onHide , productToEdit  }) {
                                 </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
-
                         <Form.Group>
                             <Form.Label>Description *</Form.Label>
                             <Form.Control
@@ -488,17 +766,13 @@ export default function ProductForm({ show, onHide , productToEdit  }) {
                                 {state.formErrors.description}
                             </Form.Control.Feedback>
                         </Form.Group>
-
                         <Col md={12}>
                             <Form.Group>
                                 <Form.Label>Catégorie *</Form.Label>
                                 <InputGroup>
                                     <Form.Select
                                         value={state.category}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            handleFieldChange("category", value);
-                                        }}
+                                        onChange={(e) => handleCategoryChange(e.target.value)}
                                         isInvalid={!!state.formErrors.category}
                                     >
                                         <option value="">Sélectionner une catégorie</option>
@@ -526,121 +800,21 @@ export default function ProductForm({ show, onHide , productToEdit  }) {
                                 </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
-
-                        <Col md={12}>
-                            <Form.Group>
-                                <Form.Label>Dépôt *</Form.Label>
-                                <InputGroup>
-                                    <Form.Select
-                                        value={state.depot}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            handleFieldChange("depot", value);
-                                        }}
-                                        isInvalid={!!state.formErrors.depot}
-                                    >
-                                        <option value="">Sélectionner un dépôt</option>
-                                        {state.depots.map((depot) => (
-                                            <option key={depot.idDepot} value={depot.idDepot}>
-                                                {depot.depot}
-                                            </option>
-                                        ))}
-                                    </Form.Select>
-                                    <Form.Control
-                                        placeholder="Nouveau dépôt"
-                                        value={state.newDepot}
-                                        onChange={(e) => handleFieldChange("newDepot", e.target.value)}
-                                    />
-                                    <Button
-                                        variant="outline-primary"
-                                        onClick={handleAddDepot}
-                                        disabled={!state.newDepot.trim()}
-                                    >
-                                        <FaPlus />
-                                    </Button>
-                                </InputGroup>
-                                <Form.Control.Feedback type="invalid">
-                                    {state.formErrors.depot}
-                                </Form.Control.Feedback>
-                            </Form.Group>
-                        </Col>
-
-                        <Col md={6}>
-                            <Form.Group>
-                                <Form.Label>Quantité *</Form.Label>
-                                <Form.Control
-                                    type="number"
-                                    min="0"
-                                    value={state.quantite}
-                                    onChange={(e) => handleFieldChange("quantite", e.target.value)}
-                                    isInvalid={!!state.formErrors.quantite}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    {state.formErrors.quantite}
-                                </Form.Control.Feedback>
-                            </Form.Group>
-                        </Col>
-
-                        <Col md={6}>
-                            <Form.Group>
-                                <Form.Label>Code RFID *</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    value={state.codeRFID}
-                                    onChange={(e) => handleFieldChange("codeRFID", e.target.value)}
-                                    isInvalid={!!state.formErrors.codeRFID}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    {state.formErrors.codeRFID}
-                                </Form.Control.Feedback>
-                            </Form.Group>
-                        </Col>
-
-                        <Col md={6}>
-                            <Form.Group>
-                                <Form.Label>Date Affectation</Form.Label>
-                                <Form.Control
-                                    type="date"
-                                    value={state.dateAffectation}
-                                    onChange={(e) => handleFieldChange("dateAffectation", e.target.value)}
-                                />
-                            </Form.Group>
-                        </Col>
-
-                        <Col md={6}>
-                            <Form.Group>
-                                <Form.Label>Date Péremption</Form.Label>
-                                <Form.Control
-                                    type="date"
-                                    value={state.datePeremption}
-                                    onChange={(e) => handleFieldChange("datePeremption", e.target.value)}
-                                />
-                            </Form.Group>
-                        </Col>
-
                         <div className="custom-fields mt-4">
                             <h5>Champs personnalisés</h5>
                             {state.customFields.map((field, index) => (
                                 <Row key={index} className="g-3 align-items-center mb-2">
-                                    <Col md={5}>
+                                    <Col md={4}>
                                         <Form.Select
                                             value={field.name}
-                                            onChange={(e) =>
-                                                dispatch({
-                                                    type: "UPDATE_CUSTOM_FIELD",
-                                                    index,
-                                                    key: "name",
-                                                    value: e.target.value,
-                                                })
-                                            }
+                                            onChange={(e) => handleCustomFieldChange(index, "name", e.target.value)}
                                         >
                                             <option value="">Sélectionner un champ</option>
                                             {predefinedFields
-                                                .filter(f =>
-                                                    f === field.name ||
-                                                    !state.customFields.some(existingField =>
-                                                        existingField.name === f && existingField !== field
-                                                    )
+                                                .filter(
+                                                    f =>
+                                                        f === field.name ||
+                                                        !state.customFields.some(existing => existing.name === f && existing !== field)
                                                 )
                                                 .map((f, i) => (
                                                     <option key={i} value={f}>
@@ -649,21 +823,10 @@ export default function ProductForm({ show, onHide , productToEdit  }) {
                                                 ))}
                                         </Form.Select>
                                     </Col>
-                                    <Col md={5}>
-                                        <Form.Control
-                                            placeholder="Valeur"
-                                            value={field.value}
-                                            onChange={(e) =>
-                                                dispatch({
-                                                    type: "UPDATE_CUSTOM_FIELD",
-                                                    index,
-                                                    key: "value",
-                                                    value: e.target.value,
-                                                })
-                                            }
-                                        />
+                                    <Col md={7}>
+                                        {renderCustomFieldInput(field, index)}
                                     </Col>
-                                    <Col md={2}>
+                                    <Col md={1} className="d-flex align-items-center">
                                         <Button
                                             variant="outline-danger"
                                             onClick={() => dispatch({ type: "DELETE_CUSTOM_FIELD", index })}
@@ -683,14 +846,9 @@ export default function ProductForm({ show, onHide , productToEdit  }) {
                                 </Button>
                             )}
                         </div>
-
                         <div className="d-grid gap-2 mt-4">
-                            <Button
-                                type="submit"
-                                className="w-100"
-                                disabled={state.isSubmitting}
-                            >
-                                {state.isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
+                            <Button type="submit" className="w-100" disabled={state.isSubmitting}>
+                                {state.isSubmitting ? "Enregistrement..." : "Enregistrer"}
                             </Button>
                         </div>
                     </Row>
