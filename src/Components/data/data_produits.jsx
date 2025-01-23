@@ -57,7 +57,9 @@ export default function DisplayProduitsData() {
     };
 
     const getTypeUniteCombined = (row) => {
-        return `${row.type} | ${row.uniteType}`;
+        const type = row.type?.nom || "Non spécifié";
+        const uniteType = row.uniteType?.nom || "Non spécifié";
+        return `${type} | ${uniteType}`;
     };
 
     const getSousCategorieCouleur = (champs) => {

@@ -96,11 +96,11 @@ const ValidationModal = ({
             if (!response.ok) {
                 if (result.validation_errors) {
                     const errorMessages = result.validation_errors.map((error) => {
-                        const rowData = error.data;
                         const errorDetails = Object.entries(error.errors)
+                            .filter(([field]) => field !== "type" && field !== "uniteType")
                             .map(([field, errors]) => `${field}: ${errors.join(", ")}`)
                             .join("; ");
-                        return `Ligne concernée (${JSON.stringify(rowData)}): ${errorDetails}`;
+                        return `Ligne concernée: ${errorDetails}`;
                     });
                     setSubmissionErrors(errorMessages);
                     setUploadStatus(
@@ -148,7 +148,7 @@ const ValidationModal = ({
                     </div>
                 )}
 
-                {submissionErrors.length > 0 ? (
+                {submissionErrors.length > 0 && (
                     <div className="alert alert-danger">
                         <h6>Erreurs lors du téléchargement :</h6>
                         <ul className="error-list">
@@ -157,17 +157,6 @@ const ValidationModal = ({
                             ))}
                         </ul>
                     </div>
-                ) : validationSummary.length > 0 ? (
-                    <div className="alert alert-warning">
-                        <h6>Problèmes détectés lors de l'importation :</h6>
-                        <ul className="error-list">
-                            {validationSummary.map((error, index) => (
-                                <li key={index}>{error}</li>
-                            ))}
-                        </ul>
-                    </div>
-                ) : (
-                    <p>Les données sont valides et prêtes pour l'importation.</p>
                 )}
 
                 <div className="table-responsive">
@@ -222,10 +211,7 @@ const ValidationModal = ({
                 <Button
                     variant="primary"
                     onClick={handleConfirmImport}
-                    disabled={
-                        validationSummary.length > 0 ||
-                        uploadStatus === "Téléchargement en cours..."
-                    }
+                    disabled={uploadStatus === "Téléchargement en cours..."}
                 >
                     Confirmer
                 </Button>

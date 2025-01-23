@@ -1,8 +1,8 @@
 import { useReducer, useEffect } from "react";
-import { Offcanvas, Form, Button, Row, Col, InputGroup, Alert } from "react-bootstrap";
+import { Offcanvas, Form, Button, Row, Col, Alert } from "react-bootstrap";
 import { FaBoxOpen, FaPlus, FaTrash } from "react-icons/fa";
 import { useProductContext } from "../context/ProductContext";
-import {MoonLoader} from "react-spinners";
+import { MoonLoader } from "react-spinners";
 
 const API_BASE_URL = "http://127.0.0.1:8000/api";
 
@@ -28,7 +28,6 @@ const initialState = {
     prixVenteTTC: "",
     category: "",
     categories: [],
-    newCategory: "",
     customFields: [],
     formErrors: {},
     loading: true,
@@ -39,7 +38,9 @@ const initialState = {
     sousFamilles: [],
     marques: [],
     modeles: [],
-    selectedValues: {}
+    selectedValues: {},
+    typesProduit: [],
+    unitesType: []
 };
 
 const apiService = {
@@ -103,12 +104,6 @@ const reducer = (state, action) => {
             return { ...state, loading: action.loading };
         case "SET_SUBMITTING":
             return { ...state, isSubmitting: action.isSubmitting };
-        case "ADD_CATEGORY":
-            return {
-                ...state,
-                categories: [...state.categories, action.category],
-                newCategory: ""
-            };
         case "ADD_CUSTOM_FIELD":
             return {
                 ...state,
@@ -155,6 +150,10 @@ const reducer = (state, action) => {
             return { ...state, marques: action.marques };
         case "SET_MODELES":
             return { ...state, modeles: action.modeles };
+        case "SET_TYPES_PRODUIT":
+            return { ...state, typesProduit: action.typesProduit };
+        case "SET_UNITES_TYPE":
+            return { ...state, unitesType: action.unitesType };
         case "RESET_FORM":
             return { ...initialState, categories: state.categories, loading: false };
         default:
@@ -244,24 +243,28 @@ export default function ProductForm({ show, onHide, productToEdit }) {
         const fetchInitialData = async () => {
             dispatch({ type: "SET_LOADING", loading: true });
             try {
-                const [categories, familles, marques, sousFamilles] = await Promise.all([
+                const [categories, familles, marques, sousFamilles, typesProduit, unitesType] = await Promise.all([
                     apiService.fetchData("categories"),
                     apiService.fetchData("familles"),
                     apiService.fetchData("marques"),
-                    apiService.fetchData("sous-familles")
+                    apiService.fetchData("sous-familles"),
+                    apiService.fetchData("types-produit"),
+                    apiService.fetchData("unites-type")
                 ]);
                 dispatch({ type: "SET_CATEGORIES", categories });
                 dispatch({ type: "SET_FAMILLES", familles });
                 dispatch({ type: "SET_MARQUES", marques });
                 dispatch({ type: "SET_SOUS_FAMILLES", sousFamilles });
+                dispatch({ type: "SET_TYPES_PRODUIT", typesProduit });
+                dispatch({ type: "SET_UNITES_TYPE", unitesType });
 
                 if (productToEdit) {
                     const fields = {
                         reference: productToEdit.reference,
-                        type: productToEdit.type,
+                        type: productToEdit.type?.id || "",
                         codeBarres: productToEdit.codeBarres,
                         description: productToEdit.description,
-                        uniteType: productToEdit.uniteType,
+                        uniteType: productToEdit.uniteType?.id || "",
                         prixVenteTTC: productToEdit.prixVenteTTC,
                         category: productToEdit.categorie?.idCategorie || ""
                     };
@@ -432,25 +435,6 @@ export default function ProductForm({ show, onHide, productToEdit }) {
             value,
             error: !strValue.trim() ? `Le champ ${field} est requis.` : undefined
         });
-    };
-
-    const handleAddCategory = async () => {
-        if (!state.newCategory.trim()) return;
-        try {
-            const newCategory = await apiService.saveData("categories", {
-                categorie: state.newCategory.trim()
-            });
-            if (!state.categories.some((cat) => cat.idCategorie === newCategory.idCategorie)) {
-                dispatch({
-                    type: "SET_CATEGORIES",
-                    categories: [...state.categories, newCategory]
-                });
-            }
-            handleFieldChange("category", newCategory.idCategorie.toString());
-            dispatch({ type: "SET_FIELD", field: "newCategory", value: "" });
-        } catch (error) {
-            dispatch({ type: "SET_ERROR", error: error.message });
-        }
     };
 
     const renderCustomFieldInput = (field, index) => {
@@ -648,7 +632,7 @@ export default function ProductForm({ show, onHide, productToEdit }) {
             left: 0,
             zIndex: 1000,
         }}>
-            <MoonLoader color="#105494" size={60}/>
+            <MoonLoader color="#105494" size={60} />
         </div>;
     }
 
@@ -656,7 +640,7 @@ export default function ProductForm({ show, onHide, productToEdit }) {
         <Offcanvas show={show} onHide={onHide} placement="end" className="offcanvas-folder">
             <Offcanvas.Header closeButton>
                 <Offcanvas.Title className="h4 d-flex align-items-center">
-                    <FaBoxOpen className="me-2"/>
+                    <FaBoxOpen className="me-2" />
                     {productToEdit ? "Modifier le produit" : "Ajouter un produit"}
                 </Offcanvas.Title>
             </Offcanvas.Header>
@@ -696,9 +680,11 @@ export default function ProductForm({ show, onHide, productToEdit }) {
                                     isInvalid={!!state.formErrors.type}
                                 >
                                     <option value="">Sélectionner un type</option>
-                                    <option value="Revente">Revente</option>
-                                    <option value="Immobilisation">Immobilisation</option>
-                                    <option value="Equipement">Equipement</option>
+                                    {state.typesProduit.map(type => (
+                                        <option key={type.id} value={type.id}>
+                                            {type.nom}
+                                        </option>
+                                    ))}
                                 </Form.Select>
                                 <Form.Control.Feedback type="invalid">
                                     {state.formErrors.type}
@@ -728,8 +714,11 @@ export default function ProductForm({ show, onHide, productToEdit }) {
                                     isInvalid={!!state.formErrors.uniteType}
                                 >
                                     <option value="">Sélectionner une unité</option>
-                                    <option value="Pièce">Pièce</option>
-                                    <option value="Douzaine">Douzaine</option>
+                                    {state.unitesType.map(unite => (
+                                        <option key={unite.id} value={unite.id}>
+                                            {unite.nom}
+                                        </option>
+                                    ))}
                                 </Form.Select>
                                 <Form.Control.Feedback type="invalid">
                                     {state.formErrors.uniteType}
@@ -752,6 +741,26 @@ export default function ProductForm({ show, onHide, productToEdit }) {
                                 </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
+                        <Col md={6}>
+                            <Form.Group>
+                                <Form.Label>Catégorie *</Form.Label>
+                                <Form.Select
+                                    value={state.category}
+                                    onChange={(e) => handleCategoryChange(e.target.value)}
+                                    isInvalid={!!state.formErrors.category}
+                                >
+                                    <option value="">Sélectionner une catégorie</option>
+                                    {state.categories.map((category) => (
+                                        <option key={category.idCategorie} value={category.idCategorie}>
+                                            {category.categorie}
+                                        </option>
+                                    ))}
+                                </Form.Select>
+                                <Form.Control.Feedback type="invalid">
+                                    {state.formErrors.category}
+                                </Form.Control.Feedback>
+                            </Form.Group>
+                        </Col>
                         <Form.Group>
                             <Form.Label>Description *</Form.Label>
                             <Form.Control
@@ -766,40 +775,6 @@ export default function ProductForm({ show, onHide, productToEdit }) {
                                 {state.formErrors.description}
                             </Form.Control.Feedback>
                         </Form.Group>
-                        <Col md={12}>
-                            <Form.Group>
-                                <Form.Label>Catégorie *</Form.Label>
-                                <InputGroup>
-                                    <Form.Select
-                                        value={state.category}
-                                        onChange={(e) => handleCategoryChange(e.target.value)}
-                                        isInvalid={!!state.formErrors.category}
-                                    >
-                                        <option value="">Sélectionner une catégorie</option>
-                                        {state.categories.map((category) => (
-                                            <option key={category.idCategorie} value={category.idCategorie}>
-                                                {category.categorie}
-                                            </option>
-                                        ))}
-                                    </Form.Select>
-                                    <Form.Control
-                                        placeholder="Nouvelle catégorie"
-                                        value={state.newCategory}
-                                        onChange={(e) => handleFieldChange("newCategory", e.target.value)}
-                                    />
-                                    <Button
-                                        variant="outline-primary"
-                                        onClick={handleAddCategory}
-                                        disabled={!state.newCategory.trim()}
-                                    >
-                                        <FaPlus />
-                                    </Button>
-                                </InputGroup>
-                                <Form.Control.Feedback type="invalid">
-                                    {state.formErrors.category}
-                                </Form.Control.Feedback>
-                            </Form.Group>
-                        </Col>
                         <div className="custom-fields mt-4">
                             <h5>Champs personnalisés</h5>
                             {state.customFields.map((field, index) => (
