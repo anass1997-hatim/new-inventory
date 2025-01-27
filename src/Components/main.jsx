@@ -60,14 +60,31 @@ export default function Layout() {
     const [loading, setLoading] = useState(true);
 
     const toggleMenu = () => {
-        setIsMenuOpen(!isMenuOpen);
+        setIsMenuOpen(prevState => !prevState);
     };
 
     useEffect(() => {
-        // Simulate data fetching or any async operation
+        const handleClickOutside = (event) => {
+            const sidebar = document.querySelector('.sidebar');
+            const toggleButton = document.querySelector('.mobile-menu-toggle');
+
+            if (sidebar && !sidebar.contains(event.target) && !toggleButton.contains(event.target)) {
+                setIsMenuOpen(false);
+            }
+        };
+
+        if (isMenuOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isMenuOpen]);
+
+    useEffect(() => {
         const fetchData = async () => {
             try {
-                // Simulate a delay for loading
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 setLoading(false);
             } catch (error) {

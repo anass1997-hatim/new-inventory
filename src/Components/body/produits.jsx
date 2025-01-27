@@ -75,6 +75,8 @@ export default function Produits() {
     const fileInputRef = useRef(null);
     const [filterText, setFilterText] = useState("");
     const [hiddenColumns, setHiddenColumns] = useState([]);
+    const [suggestions, setSuggestions] = useState([]);
+    const [selectedProduct, setSelectedProduct] = useState(null);
 
     const toggleColumn = (columnName) => {
         setHiddenColumns((prev) =>
@@ -89,12 +91,8 @@ export default function Produits() {
             return false;
         }
 
-        const allowedTypes = ["Revente", "Immobilisation", "Equipement"];
-        const allowedUnitTypes = ["Pièce", "Douzaine"];
         const maxDisplayedErrors = 5;
         const errors = [];
-        const typeErrors = new Set();
-        const uniteTypeErrors = new Set();
         const headers = Object.keys(data[0]);
 
         const missingFields = necessaryFields.filter((field) => !headers.includes(field));
@@ -112,14 +110,6 @@ export default function Produits() {
                 }
             });
 
-            if (row["Type"] && !allowedTypes.includes(row["Type"])) {
-                typeErrors.add(row["Type"]);
-            }
-
-            if (row["Unité Type"] && !allowedUnitTypes.includes(row["Unité Type"])) {
-                uniteTypeErrors.add(row["Unité Type"]);
-            }
-
             if (Object.keys(row).some(key => optionalFields.includes(key))) {
                 row.champs_personnalises = {
                     sousCategorie: row["Sous Catégorie"] || null,
@@ -135,18 +125,6 @@ export default function Produits() {
                 };
             }
         });
-
-        if (typeErrors.size > 0) {
-            errors.push(
-                `Type invalide: ${Array.from(typeErrors).join(", ")}. Les valeurs autorisées sont: ${allowedTypes.join(", ")}.`
-            );
-        }
-
-        if (uniteTypeErrors.size > 0) {
-            errors.push(
-                `Unité Type invalide: ${Array.from(uniteTypeErrors).join(", ")}. Les valeurs autorisées sont: ${allowedUnitTypes.join(", ")}.`
-            );
-        }
 
         if (Object.keys(missingFieldCounts).length > 0) {
             Object.entries(missingFieldCounts).forEach(([field, rows]) => {
@@ -252,33 +230,45 @@ export default function Produits() {
                 }
             ];
 
-            const allowedTypes = ["Revente", "Immobilisation", "Equipement"];
-            const allowedUnitTypes = ["Pièce", "Douzaine"];
-
             const workbook = XLSX.utils.book_new();
             const worksheet = XLSX.utils.json_to_sheet(exampleData);
             XLSX.utils.book_append_sheet(workbook, worksheet, "Exemple");
-
-            worksheet["!datavalidation"] = {
-                B2: {
-                    type: "list",
-                    operator: "equal",
-                    sqref: "B2:B1000",
-                    formulas: [allowedTypes]
-                },
-                D2: {
-                    type: "list",
-                    operator: "equal",
-                    sqref: "D2:D1000",
-                    formulas: [allowedUnitTypes]
-                }
-            };
-
             XLSX.writeFile(workbook, "modele_produits.xlsx");
         } catch (error) {
             console.error("Erreur lors du téléchargement du modèle:", error);
             alert("Erreur lors du téléchargement du modèle");
         }
+    };
+
+    const handleSearchChange = async (e) => {
+        const value = e.target.value;
+        setFilterText(value);
+        if (value.length === 0) {
+            setSelectedProduct(null);
+        }
+        if (value.length > 0) {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/api/rechercher/?q=${value}`);
+                if (!response.ok) {
+                    throw new Error("Erreur lors de la récupération des suggestions");
+                }
+                const data = await response.json();
+                console.log("Fetched suggestions:", data);
+                setSuggestions(data);
+            } catch (error) {
+                console.error("Fetch error:", error);
+                setSuggestions([]);
+            }
+        } else {
+            setSuggestions([]);
+        }
+    };
+
+
+    const handleSuggestionClick = (suggestion) => {
+        setFilterText(suggestion.Description || suggestion["Code Barres"] || suggestion.Référence);
+        setSelectedProduct(suggestion);
+        setSuggestions([]);
     };
 
     const filteredData = state.uploadedData.filter((item) => {
@@ -300,9 +290,41 @@ export default function Produits() {
                                 <Form.Control
                                     placeholder="Rechercher produits"
                                     value={filterText}
-                                    onChange={(e) => setFilterText(e.target.value)}
+                                    onChange={handleSearchChange}
                                 />
                                 <Button><FaSearch /></Button>
+                                {suggestions.length > 0 && (
+                                    <div className="suggestions-dropdown">
+                                        {suggestions.map((suggestion, index) => (
+                                            <div
+                                                key={index}
+                                                className="suggestion-item"
+                                                onClick={() => handleSuggestionClick(suggestion)}
+                                            >
+                                                <div className="suggestion-info">
+                                                    <span className="suggestion-label">Produit :</span>
+                                                    <span className="suggestion-reference">{suggestion.reference}</span>
+                                                </div>
+                                                <div className="suggestion-info">
+                                                    <span className="suggestion-label">Catégorie :</span>
+                                                    <span className="suggestion-category">{suggestion.category}</span>
+                                                </div>
+                                                <div className="suggestion-info">
+                                                    <span className="suggestion-label">Modèle :</span>
+                                                    <span className="suggestion-model">{suggestion.model}</span>
+                                                </div>
+                                                <div className="suggestion-info">
+                                                    <span className="suggestion-label">Type :</span>
+                                                    <span className="suggestion-type">{suggestion.type}</span>
+                                                </div>
+                                                <div className="suggestion-info">
+                                                    <span className="suggestion-label">Type Unité :</span>
+                                                    <span className="suggestion-unit-type">{suggestion.unit_type}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </InputGroup>
                         </Col>
                         <Col className="d-flex justify-content-end gap-2">
@@ -366,7 +388,7 @@ export default function Produits() {
                     </Dropdown>
                 </Nav>
                 <div className="tab-content mt-3">
-                    {state.activeTab === 'Active' && <DisplayProductData data={filteredData} hiddenColumns={hiddenColumns} />}
+                    {state.activeTab === 'Active' && <DisplayProductData data={filteredData} hiddenColumns={hiddenColumns}   selectedProduct={selectedProduct}  />}
                     {state.activeTab === 'Inactive' && <div>Inactive Content</div>}
                     {state.activeTab === 'Déstockage' && <div>Déstockage Content</div>}
                 </div>

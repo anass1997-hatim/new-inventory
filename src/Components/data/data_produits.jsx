@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState  } from "react";
 import { Table } from "flowbite-react";
 import { FaBox, FaSort, FaSortUp, FaSortDown, FaEdit, FaTrash } from "react-icons/fa";
 import { useProductContext } from "../context/ProductContext";
@@ -7,19 +7,28 @@ import 'react-toastify/dist/ReactToastify.css';
 import DeleteConfirmationModal from "../modals/confirmation_delete_produit";
 import { ToastContainer } from "react-toastify";
 import ProductForm from "../form/ajout_produit";
+import {MoonLoader} from "react-spinners";
 
-export default function DisplayProduitsData() {
+export default function DisplayProduitsData({ data, hiddenColumns, selectedProduct }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
     const [hoveredRow, setHoveredRow] = useState(null);
     const rowsPerPage = 7;
     const [isModalVisible, setModalVisible] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [selectedProductLocal, setSelectedProductLocal] = useState(null);
     const [isEditModalVisible, setEditModalVisible] = useState(false);
     const [productToEdit, setProductToEdit] = useState(null);
     const API_BASE_URL = "http://127.0.0.1:8000/api";
     const { refreshProducts } = useProductContext();
-    const { products: data, loading, error } = useProductContext();
+    const { products: contextData, loading, error } = useProductContext();
+
+
+    const filteredData = selectedProduct
+        ? contextData.filter(item =>
+            item.reference === selectedProduct.reference ||
+            item.Référence === selectedProduct.reference
+        )
+        : contextData;
 
     const apiService = {
         async deleteProduct(reference) {
@@ -43,7 +52,7 @@ export default function DisplayProduitsData() {
         },
     };
 
-    const totalPages = Math.max(1, Math.ceil(data.length / rowsPerPage));
+    const totalPages = Math.max(1, Math.ceil(filteredData.length / rowsPerPage));
 
     const handlePageChange = (page) => {
         if (page >= 1 && page <= totalPages) {
@@ -119,13 +128,13 @@ export default function DisplayProduitsData() {
     };
 
     const shouldHideColumn = (columnKey) => {
-        return data.every(row => {
+        return filteredData.every(row => {
             const value = getValueForSort(row, columnKey);
             return value === "Non spécifié" || value === "Non spécifiée";
         });
     };
 
-    const sortedData = [...data].sort((a, b) => {
+    const sortedData = [...filteredData].sort((a, b) => {
         if (!sortConfig.key) return 0;
 
         const aValue = getValueForSort(a, sortConfig.key);
@@ -167,33 +176,48 @@ export default function DisplayProduitsData() {
     };
 
     const handleDelete = (row) => {
-        setSelectedProduct(row);
+        setSelectedProductLocal(row);
         setModalVisible(true);
     };
 
     const handleDeleteConfirm = async () => {
         try {
-            if (selectedProduct) {
-                const success = await apiService.deleteProduct(selectedProduct.reference);
+            if (selectedProductLocal) {
+                const success = await apiService.deleteProduct(selectedProductLocal.reference);
                 if (success) {
-                    toast.success(`Le produit "${selectedProduct.reference}" a été supprimé avec succès.`);
+                    toast.success(`Le produit "${selectedProductLocal.reference}" a été supprimé avec succès.`);
                     refreshProducts();
                 }
             }
         } catch (error) {
-            toast.error(`Une erreur s'est produite lors de la suppression du produit "${selectedProduct.reference}".`);
+            toast.error(`Une erreur s'est produite lors de la suppression du produit "${selectedProductLocal.reference}".`);
         } finally {
             setModalVisible(false);
-            setSelectedProduct(null);
+            setSelectedProductLocal(null);
         }
     };
 
     const handleDeleteCancel = () => {
         setModalVisible(false);
-        setSelectedProduct(null);
+        setSelectedProductLocal(null);
     };
 
-    if (loading) return <div>Chargement...</div>;
+    if (loading) return <div> return (
+        <div style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+            width: "100vw",
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            zIndex: 1000,
+        }}>
+            <MoonLoader color="#105494" size={60} />
+        </div>
+        );</div>;
     if (error) return <div>Erreur: {error}</div>;
 
     return (
@@ -320,7 +344,7 @@ export default function DisplayProduitsData() {
                 show={isModalVisible}
                 onConfirm={handleDeleteConfirm}
                 onCancel={handleDeleteCancel}
-                productName={selectedProduct?.reference}
+                productName={selectedProductLocal?.reference}
             />
             <ToastContainer />
             <ProductForm

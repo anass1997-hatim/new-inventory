@@ -2,6 +2,7 @@ import { useReducer, useEffect } from "react";
 import { Offcanvas, Form, Button, Row, Col, InputGroup, Alert } from "react-bootstrap";
 import { FaFolderPlus, FaPlus, FaTrash } from "react-icons/fa";
 import '../../CSS/ajout_produit.css';
+import {MoonLoader} from "react-spinners";
 
 const API_BASE_URL = "http://127.0.0.1:8000/api";
 
@@ -252,7 +253,22 @@ export default function FolderForm({ show, onHide, onSwitchToProductForm, isFrom
     };
 
     if (state.loading) {
-        return <p>Chargement...</p>;
+        return (
+            <div style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100vh",
+                width: "100vw",
+                backgroundColor: "rgba(255, 255, 255, 0.8)",
+                position: "fixed",
+                top: 0,
+                left: 0,
+                zIndex: 1000,
+            }}>
+                <MoonLoader color="#105494" size={60} />
+            </div>
+        );;
     }
 
     return (
